@@ -8,12 +8,15 @@ OneBlockInventory
 ```
 DoubleChestInventory
 ```php
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase;
+
 use skymin\InventoryAPI\DoubleChestInventory;
 
 class TestInv extends DoubleChestInventory{
 	
-	public function __construct(Position $pos, PluginBase $plugin){
-		parent::__construct($plugin->getScheduler(), $pos, 'test');
+	public function __construct(Player $player, PluginBase $plugin){
+		parent::__construct($plugin->getScheduler(), $player->getPosition(), 'test');
 	}
 	
 }
