@@ -4,7 +4,6 @@ PocketMine-MP APIv4.0.0
 ## Example
 ### OneBlockInventory
 ```php
-use pocketmine\block\BlockLegacyIds;
 use pocketmine\player\Player;
 
 use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
