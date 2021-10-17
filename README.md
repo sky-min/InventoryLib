@@ -14,7 +14,8 @@ use skymin\InventoryAPI\OneBlockInventory;
 class TestInv extends OneBlockInventory{
 	
 	public function __construct(Player $player){
-		parent::__construct($player->getPosition(), BlockLegacyIds::HOPPER_BLOCK, 'test')
+		parent::__construct($player->getPosition(), WindowTypes::HOPPER, 'test');
+		//WindowTypes::HOPPER is HopperInventory, WindowTypes::CONTAINER is ChestInventory, WindowTypes::DROPPER is DropperInventory
 	}
 	
 }
