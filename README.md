@@ -24,12 +24,24 @@ class TestInv extends OneBlockInventory{
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 
+use pocketmine\item\ItemFactory;
+
 use skymin\InventoryAPI\DoubleChestInventory;
 
 class TestInv extends DoubleChestInventory{
 	
+	protected $plugin;
+	
 	public function __construct(Player $player, PluginBase $plugin){
 		parent::__construct($plugin->getScheduler(), $player->getPosition(), 'test');
+		$this->plugin = $plugin;
+	}
+	
+	public function onOpen(Player $who) :void{
+		parent::onOpen($who);
+		$this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function() : void{
+			$this->setItem(40, ItemFactory::getInstance()->get(1));
+		}), 8);
 	}
 	
 }
