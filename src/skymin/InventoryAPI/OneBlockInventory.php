@@ -33,8 +33,6 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
 	private int $size;
 	
-	public bool $pair = true;
-	
 	public function __construct(Position $holder, private int $blockId, private int $windowType, int $size, private string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
 		$this->size = $size;
