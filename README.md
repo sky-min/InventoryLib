@@ -1,7 +1,7 @@
 # InventoryAPI
 PocketMine-MP APIv4.0.0
 
-## how to use
+## Example
 ### OneBlockInventory
 ```php
 use pocketmine\block\BlockLegacyIds;
