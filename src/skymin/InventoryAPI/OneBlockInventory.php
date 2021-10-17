@@ -23,6 +23,8 @@ use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
+use pocketmine\network\mcpe\NetworkSession;
+
 class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
 	protected Position $holder;
@@ -30,6 +32,8 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	private Block $block;
 	
 	private int $size;
+	
+	public bool $pair = true;
 	
 	public function __construct(Position $holder, private int $blockId, private int $windowType, int $size, private string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
@@ -47,7 +51,7 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 		$world = $holder->world;
 		$this->block = $world->getBlockAt($x, $y, $z);
 		$block = BlockFactory::getInstance()->get($this->blockId, 0);
-		$this->sendBlocks($who, $block);
+		$this->sendBlocks($network, $block);
 		$nbt = CompoundTag::create()->setString('CustomName', $this->title);
 		$pk = BlockActorDataPacket::create($x, $y, $z, new CacheableNbt($nbt));
 		$network->sendDataPacket($pk);
@@ -57,7 +61,7 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
-		$this->sendBlocks($who, $this->block);
+		$this->sendBlocks($who->getNetworkSession(), $this->block);
 	}
 	
 	public function getNetworkType() :int{
@@ -72,10 +76,10 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 		return $this->holder;
 	}
 	
-	private function sendBlocks(Player $player, Block $block) :void{
+	private function sendBlocks(NetworkSession $network, Block $block) :void{
 		$pos = $this->holder;
 		$pk = UpdateBlockPacket::create($pos->x, $pos->y, $pos->z, RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
-		$player->getNetworkSession()->sendDataPacket($pk);
+		$network->sendDataPacket($pk);
 	}
 	
 }
