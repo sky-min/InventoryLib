@@ -2,7 +2,7 @@
 PocketMine-MP APIv4.0.0
 
 ## how to use
-OneBlockInventory
+### OneBlockInventory
 ```php
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\player\Player;
@@ -19,7 +19,7 @@ class TestInv extends OneBlockInventory{
 	
 }
 ```
-DoubleChestInventory
+### DoubleChestInventory
 ```php
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
@@ -34,4 +34,4 @@ class TestInv extends DoubleChestInventory{
 	
 }
 ```
-[SendInventory](https://github.com/pmmp/PocketMine-MP/blob/8db5732b44578a59c785e6e3c1d36c87c90ddeb4/src/player/Player.php#L2333)
+### [SendInventory](https://github.com/pmmp/PocketMine-MP/blob/8db5732b44578a59c785e6e3c1d36c87c90ddeb4/src/player/Player.php#L2333)
