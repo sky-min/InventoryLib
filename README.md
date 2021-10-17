@@ -41,7 +41,7 @@ class TestInv extends DoubleChestInventory{
 		parent::onOpen($who);
 		$this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function() : void{
 			$this->setItem(40, ItemFactory::getInstance()->get(1));
-		}), 8);
+		}), 8); //If you do not do this, it may not apply.
 	}
 	
 }
