@@ -23,6 +23,8 @@ use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
+use pocketmine\network\mcpe\NetworkSession;
+
 use pocketmine\scheduler\{TaskScheduler, ClosureTask};
 
 class DoubleChestInventory extends SimpleInventory implements BlockInventory{
@@ -58,21 +60,22 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 			->setInt('pairx', $x1)
 			->setInt('pairz', $z);
 		$chest = BlockFactory::getInstance()->get(54, 0);
-		$this->sendBlocks($who, $chest, $x);
-		$this->sendBlocks($who, $chest, $x1);
+		$this->sendBlocks($network, $chest, $x);
+		$this->sendBlocks($network, $chest, $x1);
 		$pk = BlockActorDataPacket::create($x, $y, $z, new CacheableNbt($nbt1));
 		$network->sendDataPacket($pk);
 		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, $x, $y, $z);
 		$this->scheduler->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
 			$network->sendDataPacket($pk);
-		}), 5);
+		}), 7);
 	}
 	
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$x = $this->holder->x;
-		$this->sendBlocks($who, $this->block1, $x);
-		$this->sendBlocks($who, $this->block2, $x + 1);
+		$network = $who->getNetworkSession();
+		$this->sendBlocks($network, $this->block1, $x);
+		$this->sendBlocks($network, $this->block2, $x + 1);
 	}
 	
 	public function getNetworkType() :int{
@@ -87,10 +90,10 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		return $this->holder;
 	}
 	
-	private function sendBlocks(Player $player, Block $block, int $x) :void{
+	private function sendBlocks(NetworkSession $network, Block $block, int $x) :void{
 		$pos = $this->holder;
 		$pk = UpdateBlockPacket::create($x, $pos->y, $pos->z, RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
-		$player->getNetworkSession()->sendDataPacket($pk);
+		$network->sendDataPacket($pk);
 	}
 	
 }
