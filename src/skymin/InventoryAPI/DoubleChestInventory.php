@@ -39,6 +39,10 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		parent::__construct(54);
 	}
 	
+	protected function setReady() :void{
+		
+	}
+	
 	public function onOpen(Player $who) :void{
 		parent::onOpen($who);
 		$network = $who->getNetworkSession();
@@ -67,7 +71,8 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, $x, $y, $z);
 		$this->scheduler->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
 			$network->sendDataPacket($pk);
-		}), 7);
+			$this->setReady();
+		}), 6);
 	}
 	
 	public function onClose(Player $who) :void{
