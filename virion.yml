@@ -1,0 +1,5 @@
+name: InventoryAPI
+antigen: skymin\InventoryAPI
+api: 4.0.0
+version: SKY
+author: skymin
