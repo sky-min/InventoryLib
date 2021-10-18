@@ -4,7 +4,6 @@ PocketMine-MP APIv4.0.0
 ## Example
 ### OneBlockInventory
 ```php
-use pocketmine\block\BlockLegacyIds;
 use pocketmine\player\Player;
 
 use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
@@ -14,7 +13,8 @@ use skymin\InventoryAPI\OneBlockInventory;
 class TestInv extends OneBlockInventory{
 	
 	public function __construct(Player $player){
-		parent::__construct($player->getPosition(), BlockLegacyIds::HOPPER_BLOCK, WindowTypes::HOPPER, 5, 'test')
+		parent::__construct($player->getPosition(), WindowTypes::HOPPER, 'test');
+		//WindowTypes::HOPPER is HopperInventory, WindowTypes::CONTAINER is ChestInventory, WindowTypes::DROPPER is DropperInventory
 	}
 	
 }
@@ -37,11 +37,8 @@ class TestInv extends DoubleChestInventory{
 		$this->plugin = $plugin;
 	}
 	
-	public function onOpen(Player $who) :void{
-		parent::onOpen($who);
-		$this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function() : void{
-			$this->setItem(40, ItemFactory::getInstance()->get(1));
-		}), 8); //If you do not do this, it may not apply.
+	public function setReady() :void{
+		$this->setItem(40, ItemFactory::getInstance()->get(1));
 	}
 	
 }

@@ -33,10 +33,25 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
 	private int $size;
 	
-	public function __construct(Position $holder, private int $blockId, private int $windowType, int $size, private string $title){
+	private int $blockId;
+	
+	private int $windowType;
+	
+	public function __construct(Position $holder, int $windowType, private string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
-		$this->size = $size;
-		parent::__construct($size);
+		if($windowType === 0){
+			parent::__construct($this->size = 27);
+			$this->blockId = 54;
+			$this->windowType = $windowType;
+		}elseif($windowType === 6 or $windowType === 7){
+			parent::__construct($this->size = 9);
+			$this->windowType = 7;
+			$this->blockId = 125;
+		}elseif($windowType === 8){
+			parent::__construct($this->size =  5);
+			$this->windowType = $windowType;
+			$this->blockId = 154;
+		}
 	}
 	
 	public function onOpen(Player $who) :void{
