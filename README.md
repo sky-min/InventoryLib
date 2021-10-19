@@ -1,4 +1,4 @@
-# InventoryAPI
+# InventoryLib
 PocketMine-MP APIv4.0.0
 
 ## Example
