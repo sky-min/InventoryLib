@@ -72,7 +72,7 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		$this->scheduler->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
 			$network->sendDataPacket($pk);
 			$this->setReady();
-		}), 6);
+		}), 10);
 	}
 	
 	public function onClose(Player $who) :void{
