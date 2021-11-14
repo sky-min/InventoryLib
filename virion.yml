@@ -1,5 +1,5 @@
-name: InventoryAPI
-antigen: skymin\InventoryAPI
+name: InventoryLib
+antigen: skymin\InventoryLib
 api: 4.0.0
 version: SKY
 author: skymin
