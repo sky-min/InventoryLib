@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace skymin\InventoryAPI;
+namespace skymin\InventoryLib;
 
 use pocketmine\player\Player;
 
@@ -15,6 +15,7 @@ use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\{
 	ContainerOpenPacket,
 	BlockActorDataPacket,
+	types\BlockPosition,
 	UpdateBlockPacket
 };
 
@@ -66,9 +67,13 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 		$block = BlockFactory::getInstance()->get($this->blockId, 0);
 		$this->sendBlocks($network, $block);
 		$nbt = CompoundTag::create()->setString('CustomName', $this->title);
-		$pk = BlockActorDataPacket::create($x, $y, $z, new CacheableNbt($nbt));
+		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
 		$network->sendDataPacket($pk);
-		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), $this->windowType, $x, $y, $z);
+		$pk = ContainerOpenPacket::blockInv(
+			$network->getInvManager()->getWindowId($this),
+			$this->windowType,
+			new BlockPosition($x,$y,$z)
+		);
 		$network->sendDataPacket($pk);
 	}
 	
@@ -91,7 +96,11 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
 	private function sendBlocks(NetworkSession $network, Block $block) :void{
 		$pos = $this->holder;
-		$pk = UpdateBlockPacket::create($pos->x, $pos->y, $pos->z, RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
+		$pk = UpdateBlockPacket::create(
+			new BlockPosition($pos->x,$pos->y,$pos->z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL);
 		$network->sendDataPacket($pk);
 	}
 	

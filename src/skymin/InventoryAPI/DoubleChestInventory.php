@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace skymin\InventoryAPI;
+namespace skymin\InventoryLib;
 
 use pocketmine\player\Player;
 
@@ -15,6 +15,7 @@ use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\{
 	ContainerOpenPacket,
 	BlockActorDataPacket,
+	types\BlockPosition,
 	UpdateBlockPacket
 };
 
@@ -66,9 +67,9 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		$chest = BlockFactory::getInstance()->get(54, 0);
 		$this->sendBlocks($network, $chest, $x);
 		$this->sendBlocks($network, $chest, $x1);
-		$pk = BlockActorDataPacket::create($x, $y, $z, new CacheableNbt($nbt1));
+		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z),new CacheableNbt($nbt1));
 		$network->sendDataPacket($pk);
-		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, $x, $y, $z);
+		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, new BlockPosition($x,$y,$z));
 		$this->scheduler->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
 			$network->sendDataPacket($pk);
 			$this->setReady();
@@ -97,7 +98,11 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 	
 	private function sendBlocks(NetworkSession $network, Block $block, int $x) :void{
 		$pos = $this->holder;
-		$pk = UpdateBlockPacket::create($x, $pos->y, $pos->z, RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
+		$pk = UpdateBlockPacket::create(
+			new BlockPosition($x,$pos->y,$pos->z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL);
 		$network->sendDataPacket($pk);
 	}
 	
