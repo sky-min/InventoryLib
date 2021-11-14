@@ -47,10 +47,10 @@ class OneBlockInventory extends SimpleInventory implements BlockInventory{
 		if($windowType === self::TYPE_CHEST){
 			parent::__construct(27);
 			$this->blockId = 54;
-		}elseif($windowType === TYPE_DROPPER){
+		}elseif($windowType === self::TYPE_DROPPER){
 			parent::__construct(9);
 			$this->blockId = 125;
-		}elseif($windowType === TYPE_HOPPER){
+		}elseif($windowType === self::TYPE_HOPPER){
 			parent::__construct(5);
 			$this->blockId = 154;
 		}else{
