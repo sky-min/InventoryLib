@@ -35,7 +35,7 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 	private Block $block1;
 	private Block $block2;
 	
-	public function __construct(private TaskScheduler $scheduler, Position $holder, private string $title){
+	public function __construct(private TaskScheduler $scheduler, Position $holder, protected string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
 		parent::__construct(54);
 	}
