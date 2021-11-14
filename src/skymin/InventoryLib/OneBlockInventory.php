@@ -28,30 +28,34 @@ use pocketmine\network\mcpe\NetworkSession;
 
 class OneBlockInventory extends SimpleInventory implements BlockInventory{
 	
+	//window types
+	public const TYPE_CHEST = 0;
+	public const TYPE_DROPPER = 6;
+	public const TYPE_HOPPER = 8;
+	
 	protected Position $holder;
 	
 	private Block $block;
-	
-	private int $size;
 	
 	private int $blockId;
 	
 	private int $windowType;
 	
-	public function __construct(Position $holder, int $windowType, private string $title){
+	public function __construct(Position $holder, int $windowType, protected string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
-		if($windowType === 0){
-			parent::__construct($this->size = 27);
+		$this->windowType = $windowType;
+		if($windowType === self::TYPE_CHEST){
+			parent::__construct(27);
 			$this->blockId = 54;
-			$this->windowType = $windowType;
-		}elseif($windowType === 6 or $windowType === 7){
-			parent::__construct($this->size = 9);
-			$this->windowType = 7;
+		}elseif($windowType === TYPE_DROPPER){
+			parent::__construct(9);
 			$this->blockId = 125;
-		}elseif($windowType === 8){
-			parent::__construct($this->size =  5);
-			$this->windowType = $windowType;
+		}elseif($windowType === TYPE_HOPPER){
+			parent::__construct(5);
 			$this->blockId = 154;
+		}else{
+			parent::__construct(27);
+			$this->blockId = 54;
 		}
 	}
 	
