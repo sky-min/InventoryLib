@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace skymin\InventoryLib;
+namespace skymin\InventoryLib\inventory;
 
 use pocketmine\player\Player;
 
@@ -28,6 +28,8 @@ use pocketmine\network\mcpe\NetworkSession;
 
 use pocketmine\scheduler\{TaskScheduler, ClosureTask};
 
+use skymin\InventoryLib\InventoryLib;
+
 class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 	
 	protected Position $holder;
@@ -35,7 +37,7 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 	private Block $block1;
 	private Block $block2;
 	
-	public function __construct(private TaskScheduler $scheduler, Position $holder, protected string $title){
+	public function __construct(Position $holder, protected string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
 		parent::__construct(54);
 	}
@@ -70,7 +72,7 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z),new CacheableNbt($nbt1));
 		$network->sendDataPacket($pk);
 		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, new BlockPosition($x,$y,$z));
-		$this->scheduler->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
+		InventoryLib::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
 			$network->sendDataPacket($pk);
 			$this->setReady();
 		}), 10);

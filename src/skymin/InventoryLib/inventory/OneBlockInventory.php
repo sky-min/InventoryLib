@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace skymin\InventoryLib;
+namespace skymin\InventoryLib\inventory;
 
 use pocketmine\player\Player;
 
