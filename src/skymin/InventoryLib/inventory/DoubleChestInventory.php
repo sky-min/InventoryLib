@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\inventory;
 
+use pocketmine\Server;
+
 use pocketmine\player\Player;
 
-use pocketmine\inventory\SimpleInventory;
 use pocketmine\block\inventory\BlockInventory;
 
 use pocketmine\block\{Block, BlockFactory};
@@ -21,25 +22,31 @@ use pocketmine\network\mcpe\protocol\{
 
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 
+use pocketmine\network\mcpe\compression\ZlibCompressor;
+use pocketmine\network\mcpe\protocol\serializer\{PacketSerializerContext, PacketBatch};
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
 use pocketmine\network\mcpe\NetworkSession;
 
-use pocketmine\scheduler\{TaskScheduler, ClosureTask};
+use pocketmine\scheduler\ClosureTask;
 
 use skymin\InventoryLib\InventoryLib;
+use skymin\InventoryLib\util\EventTrait;
 
-class DoubleChestInventory extends SimpleInventory implements BlockInventory{
+class DoubleChestInventory extends LibInventory implements BlockInventory{
+	use EventTrait;
 	
 	protected Position $holder;
 	
 	private Block $block1;
 	private Block $block2;
 	
-	public function __construct(Position $holder, protected string $title){
-		$this->holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
-		parent::__construct(54);
+	public function __construct(Position $holder, string $title){
+		$holder = new Position((int) $holder->x, (int) $holder->y + 4, (int) $holder->z, $holder->world);
+		parent::__construct($holder, $title, 54);
 	}
 	
 	protected function setReady() :void{
@@ -67,45 +74,49 @@ class DoubleChestInventory extends SimpleInventory implements BlockInventory{
 			->setInt('pairx', $x1)
 			->setInt('pairz', $z);
 		$chest = BlockFactory::getInstance()->get(54, 0);
-		$this->sendBlocks($network, $chest, $x);
-		$this->sendBlocks($network, $chest, $x1);
-		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z),new CacheableNbt($nbt1));
-		$network->sendDataPacket($pk);
+		$packets = array();
+		$pk1 = UpdateBlockPacket::create(
+			new BlockPosition($x,$y,$z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($chest->getFullId()),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL
+		);
+		$pk2 = UpdateBlockPacket::create(
+			new BlockPosition($x1,$y,$z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($chest->getFullId()),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL
+		);
+		$pk3 = BlockActorDataPacket::create(new BlockPosition($x,$y,$z),new CacheableNbt($nbt1));
+		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2, $pk3), ZlibCompressor::getInstance());
+		$network->queueCompressed($batch);
 		$pk = ContainerOpenPacket::blockInv($network->getInvManager()->getWindowId($this), 0, new BlockPosition($x,$y,$z));
-		InventoryLib::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) : void{
+		InventoryLib::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
 			$this->setReady();
-		}), 10);
+		}), 7);
 	}
 	
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
-		$x = $this->holder->x;
-		$network = $who->getNetworkSession();
-		$this->sendBlocks($network, $this->block1, $x);
-		$this->sendBlocks($network, $this->block2, $x + 1);
-	}
-	
-	public function getNetworkType() :int{
-		return 0;
-	}
-	
-	public function getName() :string{
-		return $this->title;
-	}
-	
-	public function getHolder() :Position{
-		return $this->holder;
-	}
-	
-	private function sendBlocks(NetworkSession $network, Block $block, int $x) :void{
-		$pos = $this->holder;
-		$pk = UpdateBlockPacket::create(
-			new BlockPosition($x,$pos->y,$pos->z),
-			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+		$holder = $this->holder;
+		$x = $holder->x;
+		$y = $holder->y;
+		$z = $holder->z;
+		$pk1 = UpdateBlockPacket::create(
+			new BlockPosition($x,$y,$z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($this->block1->getFullId()),
 			UpdateBlockPacket::FLAG_NETWORK,
-			UpdateBlockPacket::DATA_LAYER_NORMAL);
-		$network->sendDataPacket($pk);
+			UpdateBlockPacket::DATA_LAYER_NORMAL
+		);
+		$pk2 = UpdateBlockPacket::create(
+			new BlockPosition($x + 1,$y,$z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($this->block2->getFullId()),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL
+		);
+		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
+		$who->getNetworkSession()->queueCompressed($batch);
 	}
 	
 }

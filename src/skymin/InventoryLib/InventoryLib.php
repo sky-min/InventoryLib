@@ -13,6 +13,7 @@ final class InventoryLib{
 	public static function register(Plugin $plugin) :void{
 		if(self::$register === null){
 			self::$register = $plugin;
+			$plugin->getServer()->getPluginManager()->registerEvents(new EventListener(), $plugin);
 		}
 	}
 	
