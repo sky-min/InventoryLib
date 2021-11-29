@@ -11,7 +11,7 @@ final class InventoryLib{
 	public static ?Plugin $register = null;
 	
 	public static function register(Plugin $plugin) :void{
-		if(self::$register != null){
+		if(self::$register === null){
 			self::$register = $plugin;
 		}
 	}
