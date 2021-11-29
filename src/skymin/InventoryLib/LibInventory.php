@@ -80,11 +80,11 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			->setString('CustomName', $info->title)
 			->setInt('x', $x)
 			->setInt('y', $y)
-			->setInt('z', $z)
+			->setInt('z', $z);
 		$packets = array();
 		if($info->isDouble()){
 			$x2 = $x + 1;
-			$this->block2 = $world->getBlockAt($x2, $y, $z
+			$this->block2 = $world->getBlockAt($x2, $y, $z);
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
 			$packets[] = UpdateBlockPacket::create(
 				new BlockPosition($x2,$y,$z),
@@ -107,7 +107,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			$info->windowType,
 			new BlockPosition($x,$y,$z)
 		);
-		InventoryLib::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
+		InvLibManager::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
 			$this->openSetting();
 			if($this->openset != null){
@@ -119,10 +119,10 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	final public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
-		$holder = $this->info->holder
+		$holder = $this->info->holder;
 		$x = $holder->x;
 		$y = $holder->y;
-		$z = $holder->z
+		$z = $holder->z;
 		$pk1 = UpdateBlockPacket::create(
 			new BlockPosition($holder->x,$holder->y,$holder->z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($this->block1->getFullId()),
@@ -140,7 +140,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			UpdateBlockPacket::DATA_LAYER_NORMAL
 		);
 		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
-		$who->getNetworkSession()->queueCompressed($batch);
+		$network->queueCompressed($batch);
 		$this->closeSetting();
 		if($this->closeset != null){
 			($this->closeset)();

@@ -5,8 +5,6 @@ namespace skymin\InventoryLib;
 
 use pocketmine\world\Position;
 
-use function match;
-
 final class InvInfo{
 	
 	public const TYPE_CHEST = 0;
@@ -14,13 +12,15 @@ final class InvInfo{
 	public const TYPE_DROPPER = 2;
 	public const TYPE_HOPPER = 3;
 	
+	public Position $holder;
 	public int $windowType = 0;
 	public int $size;
 	public int $blockId;
 	
 	private bool $double = false;
 	
-	public function __construct(int $type, public Position $holder, public string $title){
+	public function __construct(int $type, Position $holder, public string $title){
+		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 		$this->windowType = match($type){
 			self::TYPE_CHEST => 0,
 			self::TYPE_DOUBLE_CHEST => 0,
