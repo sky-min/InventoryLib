@@ -7,9 +7,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 
-use skymin\InventoryLib\inventory\LibInventory;
-
-final class EventListener implements Listener{
+final class InvLibEventListener implements Listener{
 	
 	public function onSlotChange(InventoryTransactionEvent $ev) :void{
 		$transaction = $ev->getTransaction();
