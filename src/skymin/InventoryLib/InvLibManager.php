@@ -6,14 +6,14 @@ namespace skymin\InventoryLib;
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 
-final class InventoryLib{
+final class InvLibManager{
 	
 	public static ?Plugin $register = null;
 	
 	public static function register(Plugin $plugin) :void{
 		if(self::$register === null){
 			self::$register = $plugin;
-			$plugin->getServer()->getPluginManager()->registerEvents(new EventListener(), $plugin);
+			$plugin->getServer()->getPluginManager()->registerEvents(new InvLibEventListener(), $plugin);
 		}
 	}
 	

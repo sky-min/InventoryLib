@@ -7,9 +7,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 
-use skymin\InventoryLib\inventory\LibInventory;
-
-final class EventListener implements Listener{
+final class InvLibEventListener implements Listener{
 	
 	public function onSlotChange(InventoryTransactionEvent $ev) :void{
 		$transaction = $ev->getTransaction();
@@ -18,7 +16,7 @@ final class EventListener implements Listener{
 			$inventory = $action->getInventory();
 			if(!$inventory instanceof LibInventory) continue;
 			(function() use($transaction, $action, $ev){
-				if(!$this->onTransaction($transaction->getSource(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem())){
+				if($this->onActionSenssor(new InvLibAction($transaction->getSource(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem()))){
 					$ev->cancel();
 				}
 			})->call($inventory);
