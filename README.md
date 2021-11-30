@@ -21,7 +21,7 @@ $info = new InvInfo($type, $position, 'test');
 ```php
 class TestInv extends LibInventory{
 	public function __construct(InvInfo $info){
-		parent::__construct(InvInfo $info);
+		parent::__construct($info);
 	}
 	//code
 	
