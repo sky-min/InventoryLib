@@ -7,6 +7,7 @@ register `InvLibManager` during plugin enable
 InvLibManager::register($this);
 ```
 ## InvInfo
+`$position`'s type is pocketmine\world\Position
 ```php
 $info = new InvInfo(InvInfo::CHEST, $position, 'test')
 ```
@@ -25,4 +26,11 @@ class TestInv extends LibInventory{
 	}
 	
 }
+```
+## SendInventory
+```php
+$inv = new TestInv($info);
+$inv->send($player, function () use ($inv){
+	$inv->setItem(3, ItemFactory::getInstance()->get(1));
+});
 ```
