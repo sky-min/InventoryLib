@@ -1,0 +1,10 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/sky-min/InventoryLib
+build-by-default: true
+branches:
+- master
+projects:
+  InventoryLib:
+    path: ""
+    model: virion
+    type: library
+...
