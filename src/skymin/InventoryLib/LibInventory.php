@@ -33,7 +33,7 @@ use pocketmine\network\mcpe\NetworkSession;
 
 use pocketmine\scheduler\ClosureTask;
 
-use Clousure;
+use Closure;
 
 class LibInventory extends SimpleInventory implements BlockInventory{
 	
@@ -41,6 +41,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private ?Block $block2 = null;
 	
 	private ?Closure $listener = null;
+	private ?Closure $closeListener = null;
 	
 	public function __construct(private InvInfo $info){
 		parent::__construct($this->info->size);
@@ -48,6 +49,10 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final public function setListener(?Closure $closure = null) :void{
 		$this->listener = $closure;
+	}
+	
+	final public function setCloseListener(?Closure $closure = null) :void{
+		$this->closeListener = $closure;
 	}
 	
 	protected function onTransaction(InvLibAction $action) :void{}
@@ -135,6 +140,9 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		);
 		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
 		$network->queueCompressed($batch);
+		if($this->closeListener != null){
+			($this->closeListener)();
+		}
 	}
 	
 	final public function getName() :string{
