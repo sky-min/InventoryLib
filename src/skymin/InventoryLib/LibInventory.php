@@ -33,17 +33,31 @@ use pocketmine\network\mcpe\NetworkSession;
 
 use pocketmine\scheduler\ClosureTask;
 
+use Clousure;
+
 class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	private Block $block1;
 	private ?Block $block2 = null;
 	
+	private ?Closure $listener = null;
+	
 	public function __construct(private InvInfo $info){
 		parent::__construct($this->info->size);
 	}
 	
-	protected function onTransaction(Player $player,int $slot, Item $sourceItem, Item $targetItem) :bool{
-		return true;
+	final public function setListener(?Closure $closure = null) :void{
+		$this->listener = $closure;
+	}
+	
+	protected function onTransaction(InvLibAction $action) :void{}
+	
+	final protected function onActionSenssor(InvLibAction $action) :bool{
+		$this->onTransaction($action);
+		if($this->listener != null){
+			($this->listener)($action);
+		}
+		return $action->isCancelled();
 	}
 	
 	public function onOpen(Player $who) :void{
@@ -131,12 +145,18 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		return $this->info->holder;
 	}
 	
-	final public function send(Player $player) :void{
+	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
+		if($closure != null){
+			($closure)();
+		}
 	}
 	
-	final public function close(Player $player) :void{
+	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
+		if($closure != null){
+			($closure)();
+		}
 	}
 	
 }

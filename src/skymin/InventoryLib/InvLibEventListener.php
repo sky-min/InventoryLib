@@ -16,7 +16,7 @@ final class InvLibEventListener implements Listener{
 			$inventory = $action->getInventory();
 			if(!$inventory instanceof LibInventory) continue;
 			(function() use($transaction, $action, $ev){
-				if(!$this->onTransaction($transaction->getSource(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem())){
+				if($this->onActionSenssor(new InvLibAction($transaction->getSource(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem()))){
 					$ev->cancel();
 				}
 			})->call($inventory);
