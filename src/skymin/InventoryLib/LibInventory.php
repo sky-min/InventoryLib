@@ -29,11 +29,11 @@ use pocketmine\network\mcpe\convert\{RuntimeBlockMapping, GlobalItemTypeDictiona
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
-use pocketmine\network\mcpe\NetworkSession;
-
 use pocketmine\scheduler\ClosureTask;
 
 use Closure;
+
+use const null;
 
 abstract class LibInventory extends SimpleInventory implements BlockInventory{
 	

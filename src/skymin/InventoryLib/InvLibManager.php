@@ -6,6 +6,8 @@ namespace skymin\InventoryLib;
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 
+use const null;
+
 final class InvLibManager{
 	
 	public static ?Plugin $register = null;
