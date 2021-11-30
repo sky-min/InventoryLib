@@ -8,8 +8,13 @@ InvLibManager::register($this);
 ```
 ## InvInfo
 `$position`'s type is pocketmine\world\Position
+`$type` list
+- InvInfo::TYPE_CHEST
+- InvInfo::TYPE_DOUBLE_CHEST
+- invInfo::TYPE_DROPPER
+- invInfo::TYPE_HOPPER
 ```php
-$info = new InvInfo(InvInfo::CHEST, $position, 'test')
+$info = new InvInfo($type, $position, 'test')
 ```
 ## Create custom inventory class
 ```php
