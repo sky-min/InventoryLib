@@ -2,6 +2,10 @@
 PocketMine-MP APIv4.0.0
 
 # How to use
+This description does not describe all features. Please contribute for pullrequest
+
+---
+
 register `InvLibManager` during plugin enable
 ```php
 InvLibManager::register($this);
