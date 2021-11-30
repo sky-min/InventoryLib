@@ -38,32 +38,15 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private Block $block1;
 	private ?Block $block2 = null;
 	
-	private ?\Closure $openset = null;
-	private ?\Closure $closeset = null;
-	
 	public function __construct(private InvInfo $info){
 		parent::__construct($this->info->size);
 	}
-	
-	final public function setOpenSetting(\Closure $closure) :self{
-		$this->openset = $closure;
-		return $this;
-	}
-	
-	final public function setCloseSetting(\Closure $closure) :self{
-		$this->closeset = $closure;
-		return $this;
-	}
-	
-	protected function openSetting() :void{}
-	
-	protected function closeSetting() :void{}
 	
 	protected function onTransaction(Player $player,int $slot, Item $sourceItem, Item $targetItem) :bool{
 		return true;
 	}
 	
-	final public function onOpen(Player $who) :void{
+	public function onOpen(Player $who) :void{
 		parent::onOpen($who);
 		$info = $this->info;
 		$network = $who->getNetworkSession();
@@ -109,14 +92,11 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		);
 		InvLibManager::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
-			$this->openSetting();
-			if($this->openset != null){
-				($this->openset)();
-			}
+			$this->setContents($this->getContents());
 		}), 7);
 	}
 	
-	final public function onClose(Player $who) :void{
+	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
 		$holder = $this->info->holder;
@@ -141,10 +121,6 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		);
 		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
 		$network->queueCompressed($batch);
-		$this->closeSetting();
-		if($this->closeset != null){
-			($this->closeset)();
-		}
 	}
 	
 	final public function getName() :string{
