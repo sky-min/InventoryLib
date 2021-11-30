@@ -2,7 +2,7 @@
 PocketMine-MP APIv4.0.0
 
 # How to use
-This description does not describe all features. Please contribute for pullrequest
+This description does not describe all features. You can contribute for pullrequest
 
 ---
 
