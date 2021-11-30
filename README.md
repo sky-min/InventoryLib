@@ -32,7 +32,7 @@ class TestInv extends DoubleChestInventory{
 	protected $plugin;
 	
 	public function __construct(Player $player, PluginBase $plugin){
-		parent::__construct($plugin->getScheduler(), $player->getPosition(), 'test');
+		parent::__construct($player->getPosition(), 'test');
 		$this->plugin = $plugin;
 	}
 	
