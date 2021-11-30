@@ -35,7 +35,7 @@ use pocketmine\scheduler\ClosureTask;
 
 use Closure;
 
-class LibInventory extends SimpleInventory implements BlockInventory{
+abstract class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	private Block $block1;
 	private ?Block $block2 = null;
@@ -59,7 +59,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final protected function onActionSenssor(InvLibAction $action) :bool{
 		$this->onTransaction($action);
-		if($this->listener != null){
+		if((bool) $this->listener){
 			($this->listener)($action);
 		}
 		return $action->isCancelled();
@@ -140,7 +140,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		);
 		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
 		$network->queueCompressed($batch);
-		if($this->closeListener != null){
+		if((bool) $this->closeListener){
 			($this->closeListener)();
 		}
 	}
@@ -155,14 +155,14 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
-		if($closure != null){
+		if((bool) $closure){
 			($closure)();
 		}
 	}
 	
 	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
-		if($closure != null){
+		if((bool) $closure){
 			($closure)();
 		}
 	}
