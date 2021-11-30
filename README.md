@@ -8,7 +8,7 @@ InvLibManager::register($this);
 ```
 ## InvInfo
 ```php
-$info = new InvInfo(InvInfo::CHEST, new Position(0, 0, 0, $world), 'test')
+$info = new InvInfo(InvInfo::CHEST, $position, 'test')
 ```
 ## Create custom inventory class
 ```php
@@ -17,5 +17,12 @@ class TestInv extends LibInventory{
 		parent::__construct(InvInfo $info);
 	}
 	//code
+	
+	protected function onTransaction(InvLibAction $action) :void{
+		if($action->getInput()->getId() === 1){
+			$action->setCancel();
+		}
+	}
+	
 }
 ```
