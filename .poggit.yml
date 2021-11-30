@@ -7,6 +7,5 @@ projects:
     path: ""
     model: virion
     type: library
-    lint:
-      syntaxError: false
+    lint: false
 ...
