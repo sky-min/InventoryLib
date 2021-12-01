@@ -51,4 +51,9 @@ final class InvInfo{
 		return $this->double;
 	}
 	
+	public function addPosition(int $x, int $y, int $z) :void{
+		$holder = $this->holder;
+		$this->holder = new Position($holder->x + $x, $holder->y + $y, $holder->z + $z, $holder->world);
+	}
+	
 }
