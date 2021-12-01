@@ -5,18 +5,23 @@ namespace skymin\InventoryLib;
 
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
+use pocketmine\scheduler\TaskScheduler;
 
 use const null;
 
 final class InvLibManager{
 	
-	public static ?Plugin $register = null;
+	private ?TaskScheduler $scheduler = null;
 	
 	public static function register(Plugin $plugin) :void{
-		if(self::$register === null){
-			self::$register = $plugin;
+		if($this->scheduler === null){
+			$this->scheduler = $plugin->getScheduler();
 			$plugin->getServer()->getPluginManager()->registerEvents(new InvLibEventListener(), $plugin);
 		}
+	}
+	
+	public static function getScheduler() :?TaskScheduler{
+		return $scheduler;
 	}
 	
 }

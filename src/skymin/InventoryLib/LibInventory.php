@@ -35,7 +35,7 @@ use Closure;
 
 use const null;
 
-abstract class LibInventory extends SimpleInventory implements BlockInventory{
+class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	private Block $block1;
 	private ?Block $block2 = null;
@@ -45,6 +45,27 @@ abstract class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	public function __construct(private InvInfo $info){
 		parent::__construct($this->info->size);
+		if(InvLibManager::getScheduler() === null){
+			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
+		}
+	}
+	
+	final public static function create(InvInfo $info) :self{
+		return new LibInventory($info);
+	}
+	
+	final public function send(Player $player, ?Closure $closure = null) :void{
+		$player->setCurrentWindow($this);
+		if((bool) $closure){
+			($closure)();
+		}
+	}
+	
+	final public function close(Player $player, ?Closure $closure = null) :void{
+		$this->onClose($player);
+		if((bool) $closure){
+			($closure)();
+		}
 	}
 	
 	final public function setListener(?Closure $closure = null) :void{
@@ -109,7 +130,7 @@ abstract class LibInventory extends SimpleInventory implements BlockInventory{
 			$info->windowType,
 			new BlockPosition($x,$y,$z)
 		);
-		InvLibManager::$register->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
+		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
 			$this->setContents($this->getContents());
 		}), 7);
@@ -151,20 +172,6 @@ abstract class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final public function getHolder() :Position{
 		return $this->info->holder;
-	}
-	
-	final public function send(Player $player, ?Closure $closure = null) :void{
-		$player->setCurrentWindow($this);
-		if((bool) $closure){
-			($closure)();
-		}
-	}
-	
-	final public function close(Player $player, ?Closure $closure = null) :void{
-		$this->onClose($player);
-		if((bool) $closure){
-			($closure)();
-		}
 	}
 	
 }
