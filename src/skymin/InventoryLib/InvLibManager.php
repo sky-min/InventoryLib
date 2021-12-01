@@ -11,17 +11,17 @@ use const null;
 
 final class InvLibManager{
 	
-	private ?TaskScheduler $scheduler = null;
+	private static ?TaskScheduler $scheduler = null;
 	
 	public static function register(Plugin $plugin) :void{
-		if($this->scheduler === null){
-			$this->scheduler = $plugin->getScheduler();
+		if(self::$scheduler === null){
+			self::$scheduler = $plugin->getScheduler();
 			$plugin->getServer()->getPluginManager()->registerEvents(new InvLibEventListener(), $plugin);
 		}
 	}
 	
 	public static function getScheduler() :?TaskScheduler{
-		return $scheduler;
+		return self::$scheduler;
 	}
 	
 }
