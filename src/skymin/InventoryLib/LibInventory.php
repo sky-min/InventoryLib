@@ -43,7 +43,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
-		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
+		$this->holder = new Position((int) $holder->x, (int) $holder->y - 4, (int) $holder->z, $holder->world);
 	}
 	
 	final public function send(Player $player, ?Closure $closure = null) :void{
@@ -99,7 +99,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			$x2 = $x + 1;
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
 			$pk = UpdateBlockPacket::create(
-				new BlockPosition($x2,$y,$z),
+				new BlockPosition($x2, $y, $z),
 				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 				UpdateBlockPacket::FLAG_NETWORK,
 				UpdateBlockPacket::DATA_LAYER_NORMAL
@@ -107,7 +107,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			$network->sendDataPacket($pk);
 		}
 		$pk = UpdateBlockPacket::create(
-			new BlockPosition($x,$y,$z),
+			new BlockPosition($x, $y, $z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
