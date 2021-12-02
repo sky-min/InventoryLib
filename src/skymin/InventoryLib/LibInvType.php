@@ -14,7 +14,7 @@ use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
  * @method static self TYPE_DROPPER()
  * @method static self TYPE_HOPPER()
  */
-final class InvInfo{
+final class LibInvType{
 	use EnumTrait{
 		__construct as Enum_construct;
 	}
