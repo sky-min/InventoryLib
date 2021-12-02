@@ -162,7 +162,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		return $this->title;
 	}
 	
-	final public function getType() :LibInvType{
+	final public function getTypeInfo() :LibInvType{
 		return $this->type;
 	}
 	

@@ -10,7 +10,7 @@ use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
 
 /**
  * @method static self CHEST()
- * @method static self DOUBLECHEST()
+ * @method static self DOUBLE_CHEST()
  * @method static self DROPPER()
  * @method static self HOPPER()
  */
@@ -20,19 +20,19 @@ final class LibInvType{
 	protected static function setup() :void{
 		self::registerAll(
 			new self('chest'),
-			new self('doublechest'),
+			new self('double_chest'),
 			new self('dropper'),
 			new self('hopper')
 		);
 	}
 	
 	public function isDouble() :bool{
-		return ($this->id() === self::DOUBLECHEST()->id());
+		return ($this->id() === self::DOUBLE_CHEST()->id());
 	}
 	
 	public function getWindowType() :int{
 		return match($this->id()){
-			self::CHEST()->id(), self::DOUBLECHEST()->id() => WindowTypes::CONTAINER,
+			self::CHEST()->id(), self::DOUBLE_CHEST()->id() => WindowTypes::CONTAINER,
 			self::DROPPER()->id() => WindowTypes::DROPPER,
 			self::HOPPER()->id() => WindowTypes::HOPPER
 		};
@@ -41,7 +41,7 @@ final class LibInvType{
 	public function getSize() :int{
 		return match($this->id()){
 			self::CHEST()->id() => 27,
-			self::DOUBLECHEST()->id() => 54,
+			self::DOUBLE_CHEST()->id() => 54,
 			self::DROPPER()->id() => 9,
 			self::HOPPER()->id() => 5
 		};
@@ -49,7 +49,7 @@ final class LibInvType{
 	
 	public function getBlockId() :int{
 		return match($this->id()){
-			self::CHEST()->id(), self::DOUBLECHEST()->id() => 54,
+			self::CHEST()->id(), self::DOUBLE_CHEST()->id() => 54,
 			self::DROPPER()->id() => BlockLegacyIds::DROPPER,
 			self::HOPPER()->id() => BlockLegacyIds::HOPPER_BLOCK
 		};
