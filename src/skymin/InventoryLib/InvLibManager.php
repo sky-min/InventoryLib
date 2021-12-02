@@ -7,10 +7,6 @@ use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
-use muqsit\simplepackethandler\SimplePacketHandler;
-use pocketmine\network\mcpe\NetworkSession;
-use pocketmine\network\mcpe\protocol\ContainerClosePacket;
-
 use const null;
 
 final class InvLibManager{
