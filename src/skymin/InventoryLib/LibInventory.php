@@ -38,7 +38,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	private Position $holder;
 	
-	public function __construct(private InvInfo $info, Position $holder){
+	public function __construct(private InvInfo $info, Position $holder, private string $title = ''){
 		parent::__construct($this->info->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
@@ -91,7 +91,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
-			->setString('CustomName', $info->getTitle())
+			->setString('CustomName', $this->title)
 			->setInt('x', $x)
 			->setInt('y', $y)
 			->setInt('z', $z);
@@ -156,6 +156,10 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		if($this->closeListener !== null){
 			($this->closeListener)();
 		}
+	}
+	
+	final public function getTitle() :string{
+		return $this->title
 	}
 	
 	final public function getInfo() :InvInfo{
