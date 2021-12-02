@@ -47,10 +47,6 @@ final class InvInfo{
 		return $this->title;
 	}
 	
-	public function getPos() :Position{
-		return $this->holder;
-	}
-	
 	public function getWindowType() :int{
 		return $this->windowType;
 	}

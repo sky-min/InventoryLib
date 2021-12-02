@@ -36,11 +36,16 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private ?Closure $listener = null;
 	private ?Closure $closeListener = null;
 	
+	private Position $holder;
+	
 	public function __construct(private InvInfo $info){
 		parent::__construct($this->info->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
+		$this->holder = (function () : Position{
+			return $this->holder;
+		})->call($this->info);
 	}
 	
 	final public function send(Player $player, ?Closure $closure = null) :void{
@@ -79,7 +84,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		parent::onOpen($who);
 		$info = $this->info;
 		$network = $who->getNetworkSession();
-		$holder = $info->getPos();
+		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
@@ -126,7 +131,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
-		$holder = $this->info->getPos();
+		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
@@ -160,7 +165,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	}
 	
 	final public function getHolder() :Position{
-		return $this->info->getPos();
+		return $this->holder;
 	}
 	
 }
