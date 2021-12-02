@@ -44,7 +44,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private ?Closure $closeListener = null;
 	
 	public function __construct(private InvInfo $info){
-		parent::__construct($this->info->size);
+		parent::__construct($this->info->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
@@ -90,17 +90,17 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		parent::onOpen($who);
 		$info = $this->info;
 		$network = $who->getNetworkSession();
-		$holder = $info->holder;
+		$holder = $info->getPos();
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
 		$world = $holder->world;
-		$block = BlockFactory::getInstance()->get($info->blockId, 0);
+		$block = BlockFactory::getInstance()->get($info->getBlockId(), 0);
 		$this->block1 = $world->getBlockAt($x, $y, $z);
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
-			->setString('CustomName', $info->title)
+			->setString('CustomName', $info->getTitle())
 			->setInt('x', $x)
 			->setInt('y', $y)
 			->setInt('z', $z);
@@ -127,19 +127,19 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$network->queueCompressed($batch);
 		$pk = ContainerOpenPacket::blockInv(
 			$network->getInvManager()->getWindowId($this),
-			$info->windowType,
+			$info->getWindowType(),
 			new BlockPosition($x,$y,$z)
 		);
 		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
 			$this->setContents($this->getContents());
-		}), 7);
+		}), 5);
 	}
 	
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
-		$holder = $this->info->holder;
+		$holder = $this->info->getPos();
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
@@ -166,12 +166,12 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function getName() :string{
-		return $this->info->title;
+	final public function getInfo() :InvInfo{
+		return $this->info;
 	}
 	
 	final public function getHolder() :Position{
-		return $this->info->holder;
+		return $this->info->getPos();
 	}
 	
 }
