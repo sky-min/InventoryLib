@@ -47,7 +47,7 @@ final class InvInfo{
 			self::TYPE_DROPPER() => WindowTypes::DISPENSER,
 			self::TYPE_HOPPER() => WindowTypes::HOPPER,
 			default => WindowTypes::CONTAINER
-		}
+		};
 	}
 	
 	public function getSize() :int{
@@ -57,7 +57,7 @@ final class InvInfo{
 			self::TYPE_DROPPER() => 9,
 			self::TYPE_HOPPER() => 5,
 			default => 27
-		}
+		};
 	}
 	
 	public function getBlockId() :int{
@@ -66,7 +66,7 @@ final class InvInfo{
 			self::TYPE_DROPPER() => BlockLegacyIds::DROPPER,
 			self::TYPE_HOPPER() => BlockLegacyIds::HOPPER_BLOCK,
 			default => BlockLegacyIds::CHEST
-		}
+		};
 	}
 	
 }
