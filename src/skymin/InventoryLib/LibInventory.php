@@ -159,7 +159,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	}
 	
 	final public function getTitle() :string{
-		return $this->title
+		return $this->title;
 	}
 	
 	final public function getInfo() :InvInfo{
