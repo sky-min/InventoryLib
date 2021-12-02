@@ -12,35 +12,21 @@ final class InvInfo{
 	public const TYPE_DROPPER = 2;
 	public const TYPE_HOPPER = 3;
 	
-	public Position $holder;
-	public int $windowType = 0;
-	public int $size;
-	public int $blockId;
+	private Position $holder;
+	private int $windowType;
+	private int $size;
+	private int $blockId;
 	
 	private bool $double = false;
 	
-	public function __construct(int $type, Position $holder, public string $title){
+	public function __construct(int $type, Position $holder, private string $title){
 		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
-		$this->windowType = match($type){
-			self::TYPE_CHEST => 0,
-			self::TYPE_DOUBLE_CHEST => 0,
-			self::TYPE_DROPPER => 6,
-			self::TYPE_HOPPER => 8,
-			default => 0
-		};
-		$this->size = match($type){
-			self::TYPE_CHEST => 27,
-			self::TYPE_DOUBLE_CHEST => 54,
-			self::TYPE_DROPPER => 9,
-			self::TYPE_HOPPER => 5,
-			default => 27
-		};
-		$this->blockId = match($type){
-			self::TYPE_CHEST => 54,
-			self::TYPE_DOUBLE_CHEST => 54,
-			self::TYPE_DROPPER => 125,
-			self::TYPE_HOPPER => 154,
-			default => 54
+		[$this->windowType, $this->size, $this->blockId] = match($type){
+			self::TYPE_CHEST => [0, 27, 54],
+			self::TYPE_DOUBLE_CHEST => [0, 54, 54],
+			self::TYPE_DROPPER => [6, 9, 125],
+			self::TYPE_HOPPER => [8, 5, 154],
+			default => [0, 27, 54]
 		};
 		if($type === self::TYPE_DOUBLE_CHEST){
 			$this->double = true;
@@ -55,6 +41,26 @@ final class InvInfo{
 		$holder = $this->holder;
 		$this->holder = new Position($holder->x + $x, $holder->y + $y, $holder->z + $z, $holder->world);
 		return $this;
+	}
+	
+	public function getTitle() :string{
+		return $this->title;
+	}
+	
+	public function getPos() :Position{
+		return $this->holder;
+	}
+	
+	public function getWindowType() :int{
+		return $this->windowType;
+	}
+	
+	public function getSize() :int{
+		return $this->size;
+	}
+	
+	public function getBlockId() :int{
+		return $this->blockId;
 	}
 	
 }
