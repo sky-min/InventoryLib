@@ -10,62 +10,48 @@ use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
 
 /**
  * @method static self CHEST()
- * @method static self DOUBLE_CHEST()
+ * @method static self DOUBLECHEST()
  * @method static self DROPPER()
  * @method static self HOPPER()
  */
 final class LibInvType{
-	use EnumTrait{
-		__construct as Enum_construct;
-	}
+	use EnumTrait;
 	
 	protected static function setup() :void{
 		self::registerAll(
 			new self('chest'),
-			new self('double_chest'),
+			new self('doublechest'),
 			new self('dropper'),
 			new self('hopper')
 		);
 	}
 	
-	private bool $double = false;
-	
-	private function __construct(string $type){
-		$this->Enum_construct($type);
-		if($type === 'type_double_chest'){
-			$this->double = true;
-		}
-	}
-	
 	public function isDouble() :bool{
-		return $this->double;
+		return ($this->id() === self::DOUBLECHEST()->id());
 	}
 	
 	public function getWindowType() :int{
 		return match($this->id()){
-			self::CHEST(), self::DOUBLE_CHEST() => WindowTypes::CONTAINER,
-			self::DROPPER() => WindowTypes::DISPENSER,
-			self::HOPPER() => WindowTypes::HOPPER,
-			default => WindowTypes::CONTAINER
+			self::CHEST()->id(), self::DOUBLECHEST()->id() => WindowTypes::CONTAINER,
+			self::DROPPER()->id() => WindowTypes::DROPPER,
+			self::HOPPER()->id() => WindowTypes::HOPPER
 		};
 	}
 	
 	public function getSize() :int{
 		return match($this->id()){
-			self::CHEST() => 27,
-			self::DOUBLE_CHEST() => 54,
-			self::DROPPER() => 9,
-			self::HOPPER() => 5,
-			default => 27
+			self::CHEST()->id() => 27,
+			self::DOUBLECHEST()->id() => 54,
+			self::DROPPER()->id() => 9,
+			self::HOPPER()->id() => 5
 		};
 	}
 	
 	public function getBlockId() :int{
 		return match($this->id()){
-			self::CHEST(), self::DOUBLE_CHEST() => BlockLegacyIds::CHEST,
-			self::DROPPER() => BlockLegacyIds::DROPPER,
-			self::HOPPER() => BlockLegacyIds::HOPPER_BLOCK,
-			default => BlockLegacyIds::CHEST
+			self::CHEST()->id(), self::DOUBLECHEST()->id() => 54,
+			self::DROPPER()->id() => BlockLegacyIds::DROPPER,
+			self::HOPPER()->id() => BlockLegacyIds::HOPPER_BLOCK
 		};
 	}
 	
