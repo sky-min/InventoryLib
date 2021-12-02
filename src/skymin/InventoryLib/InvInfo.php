@@ -4,6 +4,9 @@ declare(strict_types = 1);
 namespace skymin\InventoryLib;
 
 use pocketmine\utils\EnumTrait;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
+
 
 /**
  * @method static self TYPE_CHEST()
@@ -39,15 +42,31 @@ final class InvInfo{
 	}
 	
 	public function getWindowType() :int{
-		
+		return match($this->id()){
+			self::TYPE_CHEST(), self::TYPE_DOUBLE_CHEST() => WindowTypes::CONTAINER,
+			self::TYPE_DROPPER() => WindowTypes::DISPENSER,
+			self::TYPE_HOPPER() => WindowTypes::HOPPER,
+			default => WindowTypes::CONTAINER
+		}
 	}
 	
 	public function getSize() :int{
-		
+		return match($this->id()){
+			self::TYPE_CHEST() => 27,
+			self::TYPE_DOUBLE_CHEST() => 54,
+			self::TYPE_DROPPER() => 9,
+			self::TYPE_HOPPER() => 5,
+			default => 27
+		}
 	}
 	
 	public function getBlockId() :int{
-		
+		return match($this->id()){
+			self::TYPE_CHEST(), self::TYPE_DOUBLE_CHEST() => BlockLegacyIds::CHEST,
+			self::TYPE_DROPPER() => BlockLegacyIds::DROPPER,
+			self::TYPE_HOPPER() => BlockLegacyIds::HOPPER_BLOCK,
+			default => BlockLegacyIds::CHEST
+		}
 	}
 	
 }
