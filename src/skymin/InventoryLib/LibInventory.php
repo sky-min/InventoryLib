@@ -3,16 +3,12 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib;
 
-use pocketmine\Server;
-
 use pocketmine\player\Player;
-
-use pocketmine\item\Item;
 
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\block\inventory\BlockInventory;
 
-use pocketmine\block\{Block, BlockFactory};
+use pocketmine\block\BlockFactory;
 
 use pocketmine\world\Position;
 
