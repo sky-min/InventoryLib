@@ -1,4 +1,26 @@
 <?php
+/**
+*      _                    _       
+*  ___| | ___   _ _ __ ___ (_)_ __  
+* / __| |/ / | | | '_ ` _ \| | '_ \ 
+* \__ \   <| |_| | | | | | | | | | |
+* |___/_|\_\\__, |_| |_| |_|_|_| |_|
+*           |___/ 
+* 
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the MIT License. see <https://opensource.org/licenses/MIT>.
+* 
+* @author skymin
+* @link   https://github.com/sky-min
+* @license https://opensource.org/licenses/MIT MIT License
+* 
+*   /\___/\
+* 　(∩`・ω・)
+* ＿/_ミつ/￣￣￣/
+* 　　＼/＿＿＿/
+*
+*/
+
 declare(strict_types = 1);
 
 namespace skymin\InventoryLib;
@@ -113,12 +135,12 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			UpdateBlockPacket::DATA_LAYER_NORMAL
 		);
 		$network->sendDataPacket($pk);
-		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
+		$pk = BlockActorDataPacket::create(new BlockPosition($x, $y, $z), new CacheableNbt($nbt));
 		$network->sendDataPacket($pk);
 		$pk = ContainerOpenPacket::blockInv(
 			$network->getInvManager()->getWindowId($this),
 			$type->getWindowType(),
-			new BlockPosition($x,$y,$z)
+			new BlockPosition($x, $y, $z)
 		);
 		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
@@ -136,7 +158,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$world = $holder->world;
 		$block = $world->getBlockAt($x, $y, $z);
 		$pk = UpdateBlockPacket::create(
-			new BlockPosition($x,$y,$z),
+			new BlockPosition($x, $y, $z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
@@ -146,7 +168,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			$x += 1;
 			$block = $world->getBlockAt($x, $y, $z);
 			$pk = UpdateBlockPacket::create(
-				new BlockPosition($x,$y,$z),
+				new BlockPosition($x, $y, $z),
 				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 				UpdateBlockPacket::FLAG_NETWORK,
 				UpdateBlockPacket::DATA_LAYER_NORMAL
