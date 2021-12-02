@@ -7,6 +7,10 @@ use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
+use muqsit\simplepackethandler\SimplePacketHandler;
+use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\protocol\ContainerClosePacket;
+
 use const null;
 
 final class InvLibManager{
@@ -22,6 +26,10 @@ final class InvLibManager{
 	
 	public static function getScheduler() :?TaskScheduler{
 		return self::$scheduler;
+	}
+	
+	public static function create(InvInfo $info) :LibInventory{
+		return new LibInventory($info);
 	}
 	
 }
