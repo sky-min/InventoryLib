@@ -38,14 +38,12 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	private Position $holder;
 	
-	public function __construct(private InvInfo $info){
+	public function __construct(private InvInfo $info, Position $holder){
 		parent::__construct($this->info->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
-		$this->holder = (function () : Position{
-			return $this->holder;
-		})->call($this->info);
+		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
 	
 	final public function send(Player $player, ?Closure $closure = null) :void{

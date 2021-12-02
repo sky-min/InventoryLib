@@ -12,15 +12,13 @@ final class InvInfo{
 	public const TYPE_DROPPER = 2;
 	public const TYPE_HOPPER = 3;
 	
-	private Position $holder;
 	private int $windowType;
 	private int $size;
 	private int $blockId;
 	
 	private bool $double = false;
 	
-	public function __construct(int $type, Position $holder, private string $title){
-		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
+	public function __construct(int $type, private string $title){
 		[$this->windowType, $this->size, $this->blockId] = match($type){
 			self::TYPE_CHEST => [0, 27, 54],
 			self::TYPE_DOUBLE_CHEST => [0, 54, 54],
@@ -35,12 +33,6 @@ final class InvInfo{
 	
 	public function isDouble() :bool{
 		return $this->double;
-	}
-	
-	public function addPosition(int $x = 0, int $y = 0, int $z = 0) :self{
-		$holder = $this->holder;
-		$this->holder = new Position($holder->x + $x, $holder->y + $y, $holder->z + $z, $holder->world);
-		return $this;
 	}
 	
 	public function getTitle() :string{
