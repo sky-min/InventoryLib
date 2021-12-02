@@ -6,6 +6,7 @@ namespace skymin\InventoryLib;
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
+use pocketmine\world\Position;
 
 use const null;
 
@@ -22,6 +23,10 @@ final class InvLibManager{
 	
 	public static function getScheduler() :?TaskScheduler{
 		return self::$scheduler;
+	}
+	
+	public static function create(InvInfo $info, Position $holder) :LibInventory{
+		return new LibInventory($info, $holder);
 	}
 	
 }

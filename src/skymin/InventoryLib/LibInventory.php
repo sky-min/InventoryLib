@@ -3,16 +3,12 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib;
 
-use pocketmine\Server;
-
 use pocketmine\player\Player;
-
-use pocketmine\item\Item;
 
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\block\inventory\BlockInventory;
 
-use pocketmine\block\{Block, BlockFactory};
+use pocketmine\block\BlockFactory;
 
 use pocketmine\world\Position;
 
@@ -37,33 +33,29 @@ use const null;
 
 class LibInventory extends SimpleInventory implements BlockInventory{
 	
-	private Block $block1;
-	private ?Block $block2 = null;
-	
 	private ?Closure $listener = null;
 	private ?Closure $closeListener = null;
 	
-	public function __construct(private InvInfo $info){
+	private Position $holder;
+	
+	public function __construct(private InvInfo $info, Position $holder){
 		parent::__construct($this->info->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
-	}
-	
-	final public static function create(InvInfo $info) :self{
-		return new LibInventory($info);
+		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
 	
 	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
-		if((bool) $closure){
+		if($closure !== null){
 			($closure)();
 		}
 	}
 	
 	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
-		if((bool) $closure){
+		if($closure !== null){
 			($closure)();
 		}
 	}
@@ -80,7 +72,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final protected function onActionSenssor(InvLibAction $action) :bool{
 		$this->onTransaction($action);
-		if((bool) $this->listener){
+		if($this->listener !== null){
 			($this->listener)($action);
 		}
 		return $action->isCancelled();
@@ -90,13 +82,12 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		parent::onOpen($who);
 		$info = $this->info;
 		$network = $who->getNetworkSession();
-		$holder = $info->getPos();
+		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
 		$world = $holder->world;
 		$block = BlockFactory::getInstance()->get($info->getBlockId(), 0);
-		$this->block1 = $world->getBlockAt($x, $y, $z);
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
@@ -104,27 +95,26 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			->setInt('x', $x)
 			->setInt('y', $y)
 			->setInt('z', $z);
-		$packets = array();
 		if($info->isDouble()){
 			$x2 = $x + 1;
-			$this->block2 = $world->getBlockAt($x2, $y, $z);
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
-			$packets[] = UpdateBlockPacket::create(
+			$pk = UpdateBlockPacket::create(
 				new BlockPosition($x2,$y,$z),
 				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 				UpdateBlockPacket::FLAG_NETWORK,
 				UpdateBlockPacket::DATA_LAYER_NORMAL
 			);
+			$network->sendDataPacket($pk);
 		}
-		$packets[] = UpdateBlockPacket::create(
+		$pk = UpdateBlockPacket::create(
 			new BlockPosition($x,$y,$z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
 		);
-		$packets[] = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
-		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), ...$packets), ZlibCompressor::getInstance());
-		$network->queueCompressed($batch);
+		$network->sendDataPacket($pk);
+		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
+		$network->sendDataPacket($pk);
 		$pk = ContainerOpenPacket::blockInv(
 			$network->getInvManager()->getWindowId($this),
 			$info->getWindowType(),
@@ -133,35 +123,37 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
 			$network->sendDataPacket($pk);
 			$this->setContents($this->getContents());
-		}), 5);
+		}), 10);
 	}
 	
 	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
-		$holder = $this->info->getPos();
+		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
-		$pk1 = UpdateBlockPacket::create(
-			new BlockPosition($holder->x,$holder->y,$holder->z),
-			RuntimeBlockMapping::getInstance()->toRuntimeId($this->block1->getFullId()),
+		$world = $holder->world;
+		$block = $world->getBlockAt($x, $y, $z);
+		$pk = UpdateBlockPacket::create(
+			new BlockPosition($x,$y,$z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
 		);
-		if($this->block2 === null){
-			$network->sendDataPacket($pk1);
-			return;
+		$network->sendDataPacket($pk);
+		if($this->info->isDouble()){
+			$x += 1;
+			$block = $world->getBlockAt($x, $y, $z);
+			$pk = UpdateBlockPacket::create(
+				new BlockPosition($x,$y,$z),
+				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+				UpdateBlockPacket::FLAG_NETWORK,
+				UpdateBlockPacket::DATA_LAYER_NORMAL
+			);
+			$network->sendDataPacket($pk);
 		}
-		$pk2 = UpdateBlockPacket::create(
-			new BlockPosition($x + 1,$y,$z),
-			RuntimeBlockMapping::getInstance()->toRuntimeId($this->block2->getFullId()),
-			UpdateBlockPacket::FLAG_NETWORK,
-			UpdateBlockPacket::DATA_LAYER_NORMAL
-		);
-		$batch = Server::getInstance()->prepareBatch(PacketBatch::fromPackets(new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()), $pk1, $pk2), ZlibCompressor::getInstance());
-		$network->queueCompressed($batch);
-		if((bool) $this->closeListener){
+		if($this->closeListener !== null){
 			($this->closeListener)();
 		}
 	}
@@ -171,7 +163,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	}
 	
 	final public function getHolder() :Position{
-		return $this->info->getPos();
+		return $this->holder;
 	}
 	
 }
