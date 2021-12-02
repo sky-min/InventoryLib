@@ -20,15 +20,15 @@ final class InvLibAction{
 		return $this->slot;
 	}
 	
-	public function getInput() :Item{
+	public function getSourceItem() :Item{
 		return $this->sourceItem;
 	}
 	
-	public function getOutput() :Item{
+	public function getTargetItem() :Item{
 		return $this->targetItem;
 	}
 	
-	public function setCancel(bool $bool = true) :void{
+	public function setCancelled(bool $bool = true) :void{
 		$this->cancelBool = $bool;
 	}
 	
