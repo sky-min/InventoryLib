@@ -10,22 +10,14 @@ register `InvLibManager` during plugin enable
 ```php
 InvLibManager::register($this);
 ```
-## InvInfo
-`$position`'s type is pocketmine\world\Position
+`$pos`'s type is pocketmine\world\Position
 
-`$type` list
-- InvInfo::TYPE_CHEST
-- InvInfo::TYPE_DOUBLE_CHEST
-- invInfo::TYPE_DROPPER
-- invInfo::TYPE_HOPPER
-```php
-$info = new InvInfo($type, $position, 'test');
-```
+
 ## Create custom inventory class
 ```php
 class TestInv extends LibInventory{
-	public function __construct(InvInfo $info){
-		parent::__construct($info);
+	public function __construct(Position $pos){
+		parent::__construct(LibInvType::DOUBLE_CHEST(),$pos, 'example');
 	}
 	//code
 	
@@ -36,10 +28,11 @@ class TestInv extends LibInventory{
 	}
 	
 }
+
 ```
 ## SendInventory
 ```php
-$inv = new TestInv($info);
+$inv = new TestInv($pos);
 $inv->send($player, function () use ($inv){
 	$inv->setItem(3, ItemFactory::getInstance()->get(1));
 });
