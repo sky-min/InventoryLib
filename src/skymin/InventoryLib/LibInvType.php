@@ -9,10 +9,10 @@ use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
 
 
 /**
- * @method static self TYPE_CHEST()
- * @method static self TYPE_DOUBLE_CHEST()
- * @method static self TYPE_DROPPER()
- * @method static self TYPE_HOPPER()
+ * @method static self CHEST()
+ * @method static self DOUBLE_CHEST()
+ * @method static self DROPPER()
+ * @method static self HOPPER()
  */
 final class LibInvType{
 	use EnumTrait{
@@ -21,10 +21,10 @@ final class LibInvType{
 	
 	protected static function setup() :void{
 		self::registerAll(
-			new self('type_chest'),
-			new self('type_double_chest'),
-			new self('type_dropper'),
-			new self('type_hopper')
+			new self('chest'),
+			new self('double_chest'),
+			new self('dropper'),
+			new self('hopper')
 		);
 	}
 	
@@ -43,28 +43,28 @@ final class LibInvType{
 	
 	public function getWindowType() :int{
 		return match($this->id()){
-			self::TYPE_CHEST(), self::TYPE_DOUBLE_CHEST() => WindowTypes::CONTAINER,
-			self::TYPE_DROPPER() => WindowTypes::DISPENSER,
-			self::TYPE_HOPPER() => WindowTypes::HOPPER,
+			self::CHEST(), self::DOUBLE_CHEST() => WindowTypes::CONTAINER,
+			self::DROPPER() => WindowTypes::DISPENSER,
+			self::HOPPER() => WindowTypes::HOPPER,
 			default => WindowTypes::CONTAINER
 		};
 	}
 	
 	public function getSize() :int{
 		return match($this->id()){
-			self::TYPE_CHEST() => 27,
-			self::TYPE_DOUBLE_CHEST() => 54,
-			self::TYPE_DROPPER() => 9,
-			self::TYPE_HOPPER() => 5,
+			self::CHEST() => 27,
+			self::DOUBLE_CHEST() => 54,
+			self::DROPPER() => 9,
+			self::HOPPER() => 5,
 			default => 27
 		};
 	}
 	
 	public function getBlockId() :int{
 		return match($this->id()){
-			self::TYPE_CHEST(), self::TYPE_DOUBLE_CHEST() => BlockLegacyIds::CHEST,
-			self::TYPE_DROPPER() => BlockLegacyIds::DROPPER,
-			self::TYPE_HOPPER() => BlockLegacyIds::HOPPER_BLOCK,
+			self::CHEST(), self::DOUBLE_CHEST() => BlockLegacyIds::CHEST,
+			self::DROPPER() => BlockLegacyIds::DROPPER,
+			self::HOPPER() => BlockLegacyIds::HOPPER_BLOCK,
 			default => BlockLegacyIds::CHEST
 		};
 	}
