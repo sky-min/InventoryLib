@@ -47,8 +47,8 @@ final class InvLibManager{
 		return self::$scheduler;
 	}
 	
-	public static function create(LibInvType $info, Position $holder, string $title = '') :LibInventory{
-		return new LibInventory($info, $holder, $title);
+	public static function create(LibInvType $type, Position $holder, string $title = '') :LibInventory{
+		return new LibInventory($type, $holder, $title);
 	}
 	
 }
