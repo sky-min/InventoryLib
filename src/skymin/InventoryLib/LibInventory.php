@@ -66,7 +66,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	public function __construct(private LibInvType $type, Position $holder, private string $title = ''){
 		parent::__construct($this->type->getSize());
 		if(InvLibManager::getScheduler() === null){
-			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
+			throw new \LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
 		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
