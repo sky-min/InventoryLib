@@ -1,25 +1,25 @@
 <?php
 /**
-*      _                    _       
-*  ___| | ___   _ _ __ ___ (_)_ __  
-* / __| |/ / | | | '_ ` _ \| | '_ \ 
-* \__ \   <| |_| | | | | | | | | | |
-* |___/_|\_\\__, |_| |_| |_|_|_| |_|
-*           |___/ 
-* 
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the MIT License. see <https://opensource.org/licenses/MIT>.
-* 
-* @author skymin
-* @link   https://github.com/sky-min
-* @license https://opensource.org/licenses/MIT MIT License
-* 
-*   /\___/\
-* 　(∩`・ω・)
-* ＿/_ミつ/￣￣￣/
-* 　　＼/＿＿＿/
-*
-*/
+ *      _                    _       
+ *  ___| | ___   _ _ __ ___ (_)_ __  
+ * / __| |/ / | | | '_ ` _ \| | '_ \ 
+ * \__ \   <| |_| | | | | | | | | | |
+ * |___/_|\_\\__, |_| |_| |_|_|_| |_|
+ *           |___/ 
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the MIT License. see <https://opensource.org/licenses/MIT>.
+ * 
+ * @author skymin
+ * @link   https://github.com/sky-min
+ * @license https://opensource.org/licenses/MIT MIT License
+ * 
+ *   /\___/\
+ * 　(∩`・ω・)
+ * ＿/_ミつ/￣￣￣/
+ * 　　＼/＿＿＿/
+ *
+ */
 
 declare(strict_types = 1);
 
@@ -52,6 +52,8 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use pocketmine\scheduler\ClosureTask;
 
+use pocketmine\utils\Utils;
+
 use Closure;
 
 use const null;
@@ -66,7 +68,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	public function __construct(private LibInvType $type, Position $holder, private string $title = ''){
 		parent::__construct($this->type->getSize());
 		if(InvLibManager::getScheduler() === null){
-			throw new \LogicException('Tried creating menu before calling ' . InvLibManager::class . 'register');
+			throw new LogicException('Tried creating menu before calling ' . InvLibManager::class . register);
 		}
 		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
@@ -74,22 +76,26 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
 		if($closure !== null){
-			($closure)();
+			Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
+			($closure)($player);
 		}
 	}
 	
 	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
 		if($closure !== null){
-			($closure)();
+			Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
+			($closure)($player);
 		}
 	}
 	
 	final public function setListener(?Closure $closure = null) :void{
+		Utils::validateCallableSignature(function(InvLibAction $action) :void{}, $closure);
 		$this->listener = $closure;
 	}
 	
 	final public function setCloseListener(?Closure $closure = null) :void{
+		Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
 		$this->closeListener = $closure;
 	}
 	
@@ -165,7 +171,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			}
 		}
 		if($this->closeListener !== null){
-			($this->closeListener)();
+			($this->closeListener)($who);
 		}
 	}
 	
