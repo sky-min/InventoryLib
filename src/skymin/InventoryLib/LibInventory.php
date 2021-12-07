@@ -76,16 +76,16 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
 		if($closure !== null){
-			Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
-			($closure)($player);
+			Utils::validateCallableSignature(function() :void{}, $closure);
+			($closure)();
 		}
 	}
 	
 	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
 		if($closure !== null){
-			Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
-			($closure)($player);
+			Utils::validateCallableSignature(function() :void{}, $closure);
+			($closure)();
 		}
 	}
 	
