@@ -39,7 +39,7 @@ use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
 final class LibInvType{
 	use EnumTrait;
 	
-	protected static function setup() :void{
+	protected static function setup() : void{
 		self::registerAll(
 			new self('chest'),
 			new self('double_chest'),
@@ -48,11 +48,11 @@ final class LibInvType{
 		);
 	}
 	
-	public function isDouble() :bool{
+	public function isDouble() : bool{
 		return ($this->id() === self::DOUBLE_CHEST()->id());
 	}
 	
-	public function getWindowType() :int{
+	public function getWindowType() : int{
 		return match($this->id()){
 			self::CHEST()->id(), self::DOUBLE_CHEST()->id() => WindowTypes::CONTAINER,
 			self::DROPPER()->id() => WindowTypes::DROPPER,
@@ -60,7 +60,7 @@ final class LibInvType{
 		};
 	}
 	
-	public function getSize() :int{
+	public function getSize() : int{
 		return match($this->id()){
 			self::CHEST()->id() => 27,
 			self::DOUBLE_CHEST()->id() => 54,
@@ -69,9 +69,9 @@ final class LibInvType{
 		};
 	}
 	
-	public function getBlockId() :int{
+	public function getBlockId() : int{
 		return match($this->id()){
-			self::CHEST()->id(), self::DOUBLE_CHEST()->id() => 54,
+			self::CHEST()->id(), self::DOUBLE_CHEST()->id() => BlockLegacyIds::CHEST,
 			self::DROPPER()->id() => BlockLegacyIds::DROPPER,
 			self::HOPPER()->id() => BlockLegacyIds::HOPPER_BLOCK
 		};

@@ -66,14 +66,14 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private Position $holder;
 	
 	public function __construct(private LibInvType $type, Position $holder, private string $title = ''){
-		parent::__construct($this->type->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new \LogicException('Tried creating menu before calling ' . InvLibManager::class . 'register');
 		}
+		parent::__construct($this->type->getSize());
 		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
 	
-	final public function send(Player $player, ?Closure $closure = null) :void{
+	public final function send(Player $player, ?Closure $closure = null) : void{
 		$player->setCurrentWindow($this);
 		if($closure !== null){
 			Utils::validateCallableSignature(function() :void{}, $closure);
@@ -81,7 +81,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function close(Player $player, ?Closure $closure = null) :void{
+	public final function close(Player $player, ?Closure $closure = null) : void{
 		$this->onClose($player);
 		if($closure !== null){
 			Utils::validateCallableSignature(function() :void{}, $closure);
@@ -89,19 +89,19 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function setListener(?Closure $closure = null) :void{
+	public final function setListener(?Closure $closure = null) : void{
 		Utils::validateCallableSignature(function(InvLibAction $action) :void{}, $closure);
 		$this->listener = $closure;
 	}
 	
-	final public function setCloseListener(?Closure $closure = null) :void{
+	public final function setCloseListener(?Closure $closure = null) : void{
 		Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
 		$this->closeListener = $closure;
 	}
 	
-	protected function onTransaction(InvLibAction $action) :void{}
+	protected function onTransaction(InvLibAction $action) : void{}
 	
-	final protected function onActionSenssor(InvLibAction $action) :bool{
+	protected final function onActionSenssor(InvLibAction $action) : bool{
 		$this->onTransaction($action);
 		if($this->listener !== null){
 			($this->listener)($action);
@@ -109,7 +109,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		return $action->isCancelled();
 	}
 	
-	public function onOpen(Player $who) :void{
+	public function onOpen(Player $who) : void{
 		parent::onOpen($who);
 		$type = $this->type;
 		$network = $who->getNetworkSession();
@@ -145,7 +145,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}), 10);
 	}
 	
-	public function onClose(Player $who) :void{
+	public function onClose(Player $who) : void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
 		$holder = $this->holder;
@@ -175,19 +175,19 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function getTitle() :string{
+	public final function getTitle() : string{
 		return $this->title;
 	}
 	
-	final public function getTypeInfo() :LibInvType{
+	public final function getTypeInfo() : LibInvType{
 		return $this->type;
 	}
 	
-	final public function getHolder() :Position{
+	public final function getHolder() : Position{
 		return $this->holder;
 	}
 	
-	private function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
+	private function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) : void{
 		$pk = UpdateBlockPacket::create(
 			new BlockPosition($x, $y, $z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),

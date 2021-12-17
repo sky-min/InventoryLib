@@ -36,7 +36,7 @@ final class InvLibManager{
 	
 	private static ?TaskScheduler $scheduler = null;
 	
-	public static function register(Plugin $plugin) :void{
+	public static function register(Plugin $plugin) : void{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
 			Server::getInstance()->getPluginManager()->registerEvent(InventoryTransactionEvent::class, function(InventoryTransactionEvent $ev) : void{
@@ -55,11 +55,11 @@ final class InvLibManager{
 		}
 	}
 	
-	public static function getScheduler() :?TaskScheduler{
+	public static function getScheduler() : ?TaskScheduler{
 		return self::$scheduler;
 	}
 	
-	public static function create(LibInvType $type, Position $holder, string $title = '') :LibInventory{
+	public static function create(LibInvType $type, Position $holder, string $title = '') : LibInventory{
 		return new LibInventory($type, $holder, $title);
 	}
 	
