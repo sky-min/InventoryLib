@@ -52,7 +52,6 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use pocketmine\scheduler\ClosureTask;
 
-
 use TypeError;
 use DaveRandom\CallbackValidator\{
 	CallbackType,
