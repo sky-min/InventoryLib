@@ -52,7 +52,7 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use pocketmine\scheduler\ClosureTask;
 
-use Closure;
+
 use TypeError;
 use DaveRandom\CallbackValidator\{
 	CallbackType,
@@ -81,7 +81,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
 		if($closure !== null){
-			if(!($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
+			if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
 				($closure)();
 			}else{
 				throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
@@ -92,7 +92,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
 		if($closure !== null){
-			if(!($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
+			if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
 				($closure)();
 			}else{
 				throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
@@ -101,7 +101,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	}
 	
 	final public function setListener(?Closure $closure = null) :void{
-		if(!($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('action', InvLibAction::class)))->isSatisfiedBy($closure)){
+		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('action', InvLibAction::class)))->isSatisfiedBy($closure)){
 			$this->listener = $closure;
 		}else{
 			throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
@@ -109,7 +109,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	}
 	
 	final public function setCloseListener(?Closure $closure = null) :void{
-		if(!($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('player', Player::class)))->isSatisfiedBy($closure)){
+		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('player', Player::class)))->isSatisfiedBy($closure)){
 			$this->closeListener = $closure;
 		}else{
 			throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
