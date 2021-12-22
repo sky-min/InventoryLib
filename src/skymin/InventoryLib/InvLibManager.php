@@ -27,8 +27,11 @@ namespace skymin\InventoryLib;
 
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
-use pocketmine\scheduler\TaskScheduler;
 use pocketmine\world\Position;
+use pocketmine\scheduler\TaskScheduler;
+use pocketmine\event\EventPriority;
+use pocketmine\event\inventory\InventoryTransactionEvent;
+use pocketmine\inventory\transaction\action\SlotChangeAction;
 
 use const null;
 

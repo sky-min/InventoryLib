@@ -52,6 +52,7 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use pocketmine\scheduler\ClosureTask;
 
+use Closure;
 use TypeError;
 use DaveRandom\CallbackValidator\{
 	CallbackType,
@@ -99,7 +100,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function setListener(?Closure $closure = null) :void{
+	final public function setListener(Closure $closure = null) :void{
 		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('action', InvLibAction::class)))->isSatisfiedBy($closure)){
 			$this->listener = $closure;
 		}else{
@@ -107,7 +108,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	final public function setCloseListener(?Closure $closure = null) :void{
+	final public function setCloseListener(Closure $closure = null) :void{
 		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('player', Player::class)))->isSatisfiedBy($closure)){
 			$this->closeListener = $closure;
 		}else{
