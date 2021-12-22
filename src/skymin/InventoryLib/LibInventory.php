@@ -52,9 +52,14 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use pocketmine\scheduler\ClosureTask;
 
-use pocketmine\utils\Utils;
-
 use Closure;
+use TypeError;
+use DaveRandom\CallbackValidator\{
+	CallbackType,
+	ParameterType,
+	ReturnType,
+	BuiltInTypes
+};
 
 use const null;
 
@@ -66,42 +71,54 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	private Position $holder;
 	
 	public function __construct(private LibInvType $type, Position $holder, private string $title = ''){
+		parent::__construct($this->type->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new \LogicException('Tried creating menu before calling ' . InvLibManager::class . 'register');
 		}
-		parent::__construct($this->type->getSize());
 		$this->holder = new Position((int) $holder->x, (int) $holder->y, (int) $holder->z, $holder->world);
 	}
 	
-	public final function send(Player $player, ?Closure $closure = null) : void{
+	final public function send(Player $player, ?Closure $closure = null) :void{
 		$player->setCurrentWindow($this);
 		if($closure !== null){
-			Utils::validateCallableSignature(function() :void{}, $closure);
-			($closure)();
+			if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
+				($closure)();
+			}else{
+				throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
+			}
 		}
 	}
 	
-	public final function close(Player $player, ?Closure $closure = null) : void{
+	final public function close(Player $player, ?Closure $closure = null) :void{
 		$this->onClose($player);
 		if($closure !== null){
-			Utils::validateCallableSignature(function() :void{}, $closure);
-			($closure)();
+			if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID)))->isSatisfiedBy($closure)){
+				($closure)();
+			}else{
+				throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
+			}
 		}
 	}
 	
-	public final function setListener(?Closure $closure = null) : void{
-		Utils::validateCallableSignature(function(InvLibAction $action) :void{}, $closure);
-		$this->listener = $closure;
+	final public function setListener(?Closure $closure = null) :void{
+		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('action', InvLibAction::class)))->isSatisfiedBy($closure)){
+			$this->listener = $closure;
+		}else{
+			throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
+		}
 	}
 	
-	public final function setCloseListener(?Closure $closure = null) : void{
-		Utils::validateCallableSignature(function(Player $player) :void{}, $closure);
-		$this->closeListener = $closure;
+	final public function setCloseListener(?Closure $closure = null) :void{
+		if(($type = new CallbackType(new ReturnType(BuiltInTypes::VOID), new ParameterType('player', Player::class)))->isSatisfiedBy($closure)){
+			$this->closeListener = $closure;
+		}else{
+			throw new TypeError("Declaration of callable '" . CallbackType::createFromCallable($closure) . "` must be compatible with `" . $type . "`");
+		}
 	}
 	
-	protected function onTransaction(InvLibAction $action) : void{}
+	protected function onTransaction(InvLibAction $action) :void{}
 	
-	protected final function onActionSenssor(InvLibAction $action) : bool{
+	final protected function onActionSenssor(InvLibAction $action) :bool{
 		$this->onTransaction($action);
 		if($this->listener !== null){
 			($this->listener)($action);
@@ -109,7 +126,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		return $action->isCancelled();
 	}
 	
-	public function onOpen(Player $who) : void{
+	public function onOpen(Player $who) :void{
 		parent::onOpen($who);
 		$type = $this->type;
 		$network = $who->getNetworkSession();
@@ -145,7 +162,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}), 10);
 	}
 	
-	public function onClose(Player $who) : void{
+	public function onClose(Player $who) :void{
 		parent::onClose($who);
 		$network = $who->getNetworkSession();
 		$holder = $this->holder;
@@ -175,19 +192,19 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		}
 	}
 	
-	public final function getTitle() : string{
+	final public function getTitle() :string{
 		return $this->title;
 	}
 	
-	public final function getTypeInfo() : LibInvType{
+	final public function getTypeInfo() :LibInvType{
 		return $this->type;
 	}
 	
-	public final function getHolder() : Position{
+	final public function getHolder() :Position{
 		return $this->holder;
 	}
 	
-	private function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) : void{
+	private function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
 		$pk = UpdateBlockPacket::create(
 			new BlockPosition($x, $y, $z),
 			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
