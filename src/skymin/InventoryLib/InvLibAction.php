@@ -30,7 +30,7 @@ use pocketmine\item\Item;
 
 final class InvLibAction{
 	
-	private bool $cancelBool = false;
+	public bool $cancelBool = false;
 	
 	public function __construct(private Player $player, private int $slot, private Item $sourceItem, private Item $targetItem){}
 	
