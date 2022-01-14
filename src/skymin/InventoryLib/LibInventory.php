@@ -64,6 +64,16 @@ use DaveRandom\CallbackValidator\{
 use const null;
 
 class LibInventory extends SimpleInventory implements BlockInventory{
+    
+    private static function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
+        $pk = UpdateBlockPacket::create(
+            new BlockPosition($x, $y, $z),
+    		RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
+    		UpdateBlockPacket::FLAG_NETWORK,
+    		UpdateBlockPacket::DATA_LAYER_NORMAL
+    	);
+    	$network->sendDataPacket($pk);
+    }
 	
 	private ?Closure $listener = null;
 	private ?Closure $closeListener = null;
@@ -146,9 +156,9 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		if($type->isDouble()){
 			$x2 = $x + 1;
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
-			$this->sendBlock($x2, $y, $z, $network, $blockId);
+			self::sendBlock($x2, $y, $z, $network, $blockId);
 		}
-		$this->sendBlock($x, $y, $z, $network, $blockId);
+		self::sendBlock($x, $y, $z, $network, $blockId);
 		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
 		$network->sendDataPacket($pk);
 		$pk = ContainerOpenPacket::blockInv(
@@ -171,7 +181,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$z = $holder->z;
 		$world = $holder->world;
 		$block = $world->getBlockAt($x, $y, $z);
-		$this->sendBlock($x, $y, $z, $network, $block->getFullId());
+		self::sendBlock($x, $y, $z, $network, $block->getFullId());
 		$tile = $world->getTileAt($x, $y, $z);
 		if($tile instanceof Spawnable){
 			$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), $tile->getSerializedSpawnCompound());
@@ -180,7 +190,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		if($this->type->isDouble()){
 			$x += 1;
 			$block = $world->getBlockAt($x, $y, $z);
-			$this->sendBlock($x, $y, $z, $network, $block->getFullId());
+			self::sendBlock($x, $y, $z, $network, $block->getFullId());
 			$tile = $world->getTileAt($x, $y, $z);
 			if($tile instanceof Spawnable){
 				$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), $tile->getSerializedSpawnCompound());
@@ -202,16 +212,6 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 	
 	final public function getHolder() :Position{
 		return $this->holder;
-	}
-	
-	private function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
-		$pk = UpdateBlockPacket::create(
-			new BlockPosition($x, $y, $z),
-			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
-			UpdateBlockPacket::FLAG_NETWORK,
-			UpdateBlockPacket::DATA_LAYER_NORMAL
-		);
-		$network->sendDataPacket($pk);
 	}
 	
 }
