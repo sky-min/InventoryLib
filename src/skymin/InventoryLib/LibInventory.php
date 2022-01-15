@@ -64,16 +64,16 @@ use DaveRandom\CallbackValidator\{
 use const null;
 
 class LibInventory extends SimpleInventory implements BlockInventory{
-    
-    private static function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
-        $pk = UpdateBlockPacket::create(
-            new BlockPosition($x, $y, $z),
-    		RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
-    		UpdateBlockPacket::FLAG_NETWORK,
-    		UpdateBlockPacket::DATA_LAYER_NORMAL
-    	);
-    	$network->sendDataPacket($pk);
-    }
+	
+	protected static function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
+		$pk = UpdateBlockPacket::create(
+			new BlockPosition($x, $y, $z),
+			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
+			UpdateBlockPacket::FLAG_NETWORK,
+			UpdateBlockPacket::DATA_LAYER_NORMAL
+		);
+		$network->sendDataPacket($pk);
+	}
 	
 	private ?Closure $listener = null;
 	private ?Closure $closeListener = null;
