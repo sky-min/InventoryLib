@@ -144,7 +144,6 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
-		$world = $holder->world;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
