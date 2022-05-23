@@ -61,7 +61,7 @@ use DaveRandom\CallbackValidator\{
 	BuiltInTypes
 };
 
-use const null;
+use function spl_object_id;
 
 class LibInventory extends SimpleInventory implements BlockInventory{
 	
@@ -144,6 +144,7 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
+		$world = $holder->world;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
@@ -165,7 +166,10 @@ class LibInventory extends SimpleInventory implements BlockInventory{
 			$type->getWindowType(),
 			new BlockPosition($x,$y,$z)
 		);
-		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $network) :void{
+		InvLibManager::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($pk, $player, $network) :void{
+			if(!$network->isConnected()) return;
+			$current = $player->getCurrentWindow();
+			if($current === null || spl_object_id($current) !== spl_object_id($this)) return;
 			$network->sendDataPacket($pk);
 			$this->setContents($this->getContents());
 		}), 10);
