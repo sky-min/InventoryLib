@@ -25,6 +25,9 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib;
 
+use skymin\InventoryLib\action\InvAction;
+use skymin\InventoryLib\inventory\BaseInventory;
+
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\world\Position;
@@ -33,12 +36,10 @@ use pocketmine\event\EventPriority;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 
-use const null;
+final class InvLibHandler{
 
-final class InvLibManager{
-	
 	private static ?TaskScheduler $scheduler = null;
-	
+
 	public static function register(Plugin $plugin) : void{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
@@ -47,23 +48,22 @@ final class InvLibManager{
 				foreach($transaction->getActions() as $action){
 					if(!$action instanceof SlotChangeAction) continue;
 					$inventory = $action->getInventory();
-					if(!$inventory instanceof LibInventory) continue;
-					(function() use($transaction, $action, $ev){
-						if($this->onActionSenssor(new InvLibAction($transaction->getSource(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem()))){
-							$ev->cancel();
-						}
-					})->call($inventory);
+					if(!$inventory instanceof BaseInventory) continue;
+					if($inventory->onTransaction(new InvLibAction(
+						$transaction->getSource(),
+						$action->getSlot(),
+						$action->getSourceItem(),
+						$action->getTargetItem()
+					))){
+						$ev->cancel();
+					}
 				}
-			}, EventPriority::NORMAL, $plugin, true);
+			}, EventPriority::HIGHEST, $plugin);
 		}
 	}
-	
+
 	public static function getScheduler() : ?TaskScheduler{
 		return self::$scheduler;
 	}
-	
-	public static function create(LibInvType $type, Position $holder, string $title = '') : LibInventory{
-		return new LibInventory($type, $holder, $title);
-	}
-	
+
 }
