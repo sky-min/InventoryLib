@@ -109,7 +109,11 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	public function onClose(Player $who) : void{
 		parent::onClose($who);
-		$network = $who->getNetworkSession();
+		$this->sendRealBlock($player);
+	}
+
+	public function sendRealBlock(Player $player) : void{
+		$network = $player->getNetworkSession();
 		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;

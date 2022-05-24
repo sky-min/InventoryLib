@@ -33,7 +33,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\world\Position;
 use pocketmine\scheduler\TaskScheduler;
 use pocketmine\event\EventPriority;
-use pocketmine\event\inventory\InventoryTransactionEvent;
+use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
 use pocketmine\inventory\transaction\action\{SlotChangeAction, DropItemAction};
 
 final class InvLibHandler{
@@ -43,7 +43,8 @@ final class InvLibHandler{
 	public static function register(Plugin $plugin) : void{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
-			Server::getInstance()->getPluginManager()->registerEvent(InventoryTransactionEvent::class, function(InventoryTransactionEvent $ev) : void{
+			$manager = Server::getInstance()->getPluginManager();
+			$manager->registerEvent(InventoryTransactionEvent::class, static function(InventoryTransactionEvent $ev) : void{
 				$transaction = $ev->getTransaction();
 				foreach($transaction->getActions() as $action){
 					$inventory = $action->getInventory();
@@ -56,9 +57,19 @@ final class InvLibHandler{
 						$action->getTargetItem()
 					))){
 						$ev->cancel();
+					}elseif($ev->isCancelled()){
+						$ev->uncancel();
 					}
 				}
 			}, EventPriority::HIGHEST, $plugin);
+			$manager->registerEvent(InventoryOpenEvent::class, static function(InventoryOpenEvent $ev) : void{
+				if($ev->isCancelled()){
+					$inventory = $ev->getInventory();
+					if($inventory instanceof BaseInventory){
+						$inventory->sendRealBlock($ev->getPlayer());
+					}
+				}
+			}, EventPriority::MONITOR, $plugin, true);
 		}
 	}
 
