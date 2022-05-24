@@ -6,7 +6,7 @@ namespace skymin\InventoryLib\inventory;
 use skymin\InventoryLib\action\InventoryAction;
 
 use pocketmine\utils\Utils;
-use pocketmine\player\Player
+use pocketmine\player\Player;
 
 use Closure;
 

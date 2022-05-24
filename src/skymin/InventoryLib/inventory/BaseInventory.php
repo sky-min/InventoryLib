@@ -55,7 +55,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
 		$pk = UpdateBlockPacket::create(
-			$pos
+			$pos,
 			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
