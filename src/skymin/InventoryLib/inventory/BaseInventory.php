@@ -50,6 +50,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
+use function spl_object_id;
+
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
 
@@ -72,7 +74,19 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
-		$this->holder = $holder = new Position((int) $pos->x, (int) $pos->y - 2, (int) $pos->z, $pos->world);
+		$y = $pos->y;
+		if($y - 2 > -64 && $y - 2 < 256){
+			$y -= 2;
+		}elseif($y + 3 > -64 && $y + 3 < 256){
+			$y += 3;
+		}else{
+			return;
+		}
+		$this->holder = $holder = new Position(
+			(int) $pos->x,
+			(int) $y,
+			(int) $pos->z, $pos->world
+		);
 		$type = $this->type;
 		$network = $player->getNetworkSession();
 		$x = $holder->x;
@@ -144,7 +158,8 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	public function onAction(InventoryAction $action) : bool{}
 
 	final public function close(Player $player) : void{
-		$player->removeCurrentWindow();
+		$this->onClose($player);
+		(fn() => $this->currentWindow = null)->call($player);
 	}
 
 	final public function getTitle() : string{
