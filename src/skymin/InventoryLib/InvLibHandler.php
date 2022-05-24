@@ -43,8 +43,7 @@ final class InvLibHandler{
 	public static function register(Plugin $plugin) : void{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
-			$manager = Server::getInstance()->getPluginManager();
-			$manager->registerEvent(InventoryTransactionEvent::class, static function(InventoryTransactionEvent $ev) : void{
+			Server::getInstance()->getPluginManager()->registerEvent(InventoryTransactionEvent::class, static function(InventoryTransactionEvent $ev) : void{
 				$transaction = $ev->getTransaction();
 				foreach($transaction->getActions() as $action){
 					$inventory = $action->getInventory();
@@ -62,14 +61,6 @@ final class InvLibHandler{
 					}
 				}
 			}, EventPriority::HIGHEST, $plugin);
-			$manager->registerEvent(InventoryOpenEvent::class, static function(InventoryOpenEvent $ev) : void{
-				if($ev->isCancelled()){
-					$inventory = $ev->getInventory();
-					if($inventory instanceof BaseInventory){
-						$inventory->sendRealBlock($ev->getPlayer());
-					}
-				}
-			}, EventPriority::MONITOR, $plugin, true);
 		}
 	}
 

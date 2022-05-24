@@ -42,6 +42,7 @@ use pocketmine\network\mcpe\protocol\{
 };
 
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\event\inventory\InventoryOpenEvent;
 
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
@@ -62,7 +63,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
 		);
-		$network->addToSendBuffer($pk);
+		$network->sendDataPacket($pk);
 	}
 
 	public function __construct(private InvType $type, private string $title = ''){
@@ -87,14 +88,13 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			(int) $y,
 			(int) $pos->z, $pos->world
 		);
+		// Send FakeBlock
 		$type = $this->type;
 		$network = $player->getNetworkSession();
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
-		/** @var bool */
-		$double = $type->isDouble();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
@@ -102,7 +102,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			->setInt('x', $x)
 			->setInt('y', $y)
 			->setInt('z', $z);
-		if($double){
+		if($type->isDouble()){
 			$x2 = $x + 1;
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
 			self::sendBlock(new BlockPosition($x2, $y, $z), $network, $blockId);
@@ -110,15 +110,28 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$blockpos = new BlockPosition($x, $y, $z);
 		self::sendBlock($blockpos, $network, $blockId);
 		$pk = BlockActorDataPacket::create($blockpos, new CacheableNbt($nbt));
-		$network->addToSendBuffer($pk);
-		if($double){
-			InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($player) :void{
-				if(!$player->isConnected()) return;
-				$player->setCurrentWindow($this);
-			}), 8);
-		}else{
-			$player->setCurrentWindow($this);
-		}
+		$network->sendDataPacket($pk);
+		//Player::setCurrentWindow only applies to Chest...
+		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($player, $network, $type, $blockpos) : void{
+			if(!$network->isConnected()) return;
+			$ev = new InventoryOpenEvent($this, $player);
+			$ev->call();
+			if($ev->isCancelled()){
+				$this->sendRealBlock($player);
+				return;
+			}
+			$player->removeCurrentWindow();
+			$inventoryManager = $network->getInvManager();
+			$pk = ContainerOpenPacket::blockInv(
+				(fn(BaseInventory $inv) => $this->addDynamic($inv))->call($inventoryManager, $this),
+				$type->getWindowType(),
+				$blockpos
+			);
+			$network->sendDataPacket($pk);
+			$inventoryManager->syncContents($this);
+			$this->onOpen($player);
+			(fn(BaseInventory $inv) => $this->currentWindow = $inv)->call($player, $this);
+		}), 8);
 	}
 
 	public function onClose(Player $who) : void{
@@ -126,7 +139,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$this->sendRealBlock($who);
 	}
 
-	final public function sendRealBlock(Player $player) : void{
+	final protected function sendRealBlock(Player $player) : void{
 		$network = $player->getNetworkSession();
 		$holder = $this->holder;
 		$x = $holder->x;
@@ -139,7 +152,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$tile = $world->getTileAt($x, $y, $z);
 		if($tile instanceof Spawnable){
 			$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
-			$network->addToSendBuffer($pk);
+			$network->sendDataPacket($pk);
 		}
 		if($this->type->isDouble()){
 			$x += 1;
@@ -149,7 +162,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			$tile = $world->getTileAt($x, $y, $z);
 			if($tile instanceof Spawnable){
 				$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
-				$network->addToSendBuffer($pk);
+				$network->sendDataPacket($pk);
 			}
 		}
 	}
@@ -157,7 +170,8 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	// If it returns false, the event is canceled.
 	public function onAction(InventoryAction $action) : bool{}
 
-	final public function close(Player $player) : void{
+	// Player::removeCurrentWindow() does not work with the next Window.
+	final public function close(Player $player) : void{ //
 		$this->onClose($player);
 		(fn() => $this->currentWindow = null)->call($player);
 	}
