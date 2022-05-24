@@ -61,7 +61,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	final public static function checkTime(Player $player) : bool{
 		$id = spl_object_id($player);
-		if(isset(self::$playertime[$id]) && microtime(true) - self::$playertime[$id] < 0.45){
+		if(isset(self::$playertime[$id]) && microtime(true) - self::$playertime[$id] < 0.41){
 			return false;
 		}
 		self::$playertime[$id] = microtime(true);
