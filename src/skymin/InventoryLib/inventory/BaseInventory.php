@@ -53,7 +53,7 @@ use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
 
-	protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
+	final protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
 		$pk = UpdateBlockPacket::create(
 			$pos,
 			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
@@ -65,11 +65,11 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
-		if(InvLibManager::getScheduler() === null){
+		if(InvLibHandler::getScheduler() === null){
 			throw new \LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
 		}
 	}
-	
+
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
 		$this->holder = $holder = new Position((int) $pos->x, (int) $pos->y - 2, (int) $pos->z, $pos->world);
@@ -109,30 +109,32 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	public function onClose(Player $who) : void{
 		parent::onClose($who);
-		$this->sendRealBlock($player);
+		$this->sendRealBlock($who);
 	}
 
-	public function sendRealBlock(Player $player) : void{
+	final public function sendRealBlock(Player $player) : void{
 		$network = $player->getNetworkSession();
 		$holder = $this->holder;
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
 		$world = $holder->world;
+		$blockpos = new BlockPosition($x,$y,$z);
 		$block = $world->getBlockAt($x, $y, $z);
-		self::sendBlock($x, $y, $z, $network, $block->getFullId());
+		self::sendBlock($blockpos, $network, $block->getFullId());
 		$tile = $world->getTileAt($x, $y, $z);
 		if($tile instanceof Spawnable){
-			$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), $tile->getSerializedSpawnCompound());
+			$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
 			$network->addToSendBuffer($pk);
 		}
 		if($this->type->isDouble()){
 			$x += 1;
 			$block = $world->getBlockAt($x, $y, $z);
-			self::sendBlock($x, $y, $z, $network, $block->getFullId());
+			$blockpos = new BlockPosition($x,$y,$z);
+			self::sendBlock($blockpos, $network, $block->getFullId());
 			$tile = $world->getTileAt($x, $y, $z);
 			if($tile instanceof Spawnable){
-				$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), $tile->getSerializedSpawnCompound());
+				$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
 				$network->addToSendBuffer($pk);
 			}
 		}
@@ -142,7 +144,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	public function onAction(InventoryAction $action) : bool{}
 
 	final public function close(Player $player) : void{
-		$this->onClose($player);
+		$player->removeCurrentWindow();
 	}
 
 	final public function getTitle() : string{
