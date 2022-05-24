@@ -63,7 +63,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$network->addToSendBuffer($pk);
 	}
 
-	public function __construct(private LibInvType $type, private string $title = ''){
+	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
 		if(InvLibManager::getScheduler() === null){
 			throw new \LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
@@ -149,7 +149,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$this->title = $title;
 	}
 
-	final public function getTypeInfo() : LibInvType{
+	final public function getTypeInfo() : InvType{
 		return $this->type;
 	}
 

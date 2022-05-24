@@ -12,7 +12,7 @@ use Closure;
 
 final class SimpleInv extends BaseInventory{
 
-	public static function create(private LibInvType $type, private string $title = '') : self{
+	public static function create(private InvType $type, private string $title = '') : self{
 		return new self($type, $title);
 	}
 
