@@ -13,7 +13,7 @@ use Closure;
 final class SimpleInv extends BaseInventory{
 
 	public static function create(private LibInvType $type, private string $title = '') : self{
-		return new self($type, $title);
+		return new SimpleInv($type, $title);
 	}
 
 	private ?Closure $actionHandler = null;
