@@ -25,7 +25,7 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib;
 
-use skymin\InventoryLib\action\InvAction;
+use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
 
 use pocketmine\Server;
@@ -34,7 +34,7 @@ use pocketmine\world\Position;
 use pocketmine\scheduler\TaskScheduler;
 use pocketmine\event\EventPriority;
 use pocketmine\event\inventory\InventoryTransactionEvent;
-use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\inventory\transaction\action\{SlotChangeAction, DropItemAction};
 
 final class InvLibHandler{
 
@@ -46,10 +46,10 @@ final class InvLibHandler{
 			Server::getInstance()->getPluginManager()->registerEvent(InventoryTransactionEvent::class, function(InventoryTransactionEvent $ev) : void{
 				$transaction = $ev->getTransaction();
 				foreach($transaction->getActions() as $action){
-					if(!$action instanceof SlotChangeAction) continue;
 					$inventory = $action->getInventory();
 					if(!$inventory instanceof BaseInventory) continue;
-					if($inventory->onTransaction(new InvLibAction(
+					if(!$action instanceof SlotChangeAction) continue;
+					if(!$inventory->onAction(new InventoryAction(
 						$transaction->getSource(),
 						$action->getSlot(),
 						$action->getSourceItem(),

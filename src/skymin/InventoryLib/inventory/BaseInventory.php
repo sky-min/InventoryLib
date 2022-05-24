@@ -26,7 +26,7 @@ declare(strict_types = 1);
 namespace skymin\InventoryLib\inventory;
 
 use skymin\InventoryLib\InvLibHandler;
-use skymin\InventoryLib\action\InvAction;
+use skymin\InventoryLib\action\InventoryAction;
 
 use pocketmine\player\Player;
 use pocketmine\inventory\SimpleInventory;
@@ -41,6 +41,8 @@ use pocketmine\network\mcpe\protocol\{
 	UpdateBlockPacket
 };
 
+use pocketmine\scheduler\ClosureTask;
+
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
@@ -48,14 +50,12 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
-use pocketmine\scheduler\ClosureTask;
-
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
 
-	protected static function sendBlock(int $x, int $y, int $z, NetworkSession $network, int $blockId) :void{
+	protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
 		$pk = UpdateBlockPacket::create(
-			new BlockPosition($x, $y, $z),
+			$pos
 			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
 			UpdateBlockPacket::FLAG_NETWORK,
 			UpdateBlockPacket::DATA_LAYER_NORMAL
@@ -72,13 +72,14 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
-		$this->holder = $holder = new Position((int) $pos->x, (int) $pos->y, (int) $pos->z, $pos->world);
+		$this->holder = $holder = new Position((int) $pos->x, (int) $pos->y - 2, (int) $pos->z, $pos->world);
 		$type = $this->type;
 		$network = $player->getNetworkSession();
 		$x = $holder->x;
 		$y = $holder->y;
 		$z = $holder->z;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
+		/** @var bool */
 		$double = $type->isDouble();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
@@ -90,10 +91,11 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		if($double){
 			$x2 = $x + 1;
 			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
-			self::sendBlock($x2, $y, $z, $network, $blockId);
+			self::sendBlock(new BlockPosition($x2, $y, $z), $network, $blockId);
 		}
-		self::sendBlock($x, $y, $z, $network, $blockId);
-		$pk = BlockActorDataPacket::create(new BlockPosition($x,$y,$z), new CacheableNbt($nbt));
+		$blockpos = new BlockPosition($x, $y, $z);
+		self::sendBlock($blockpos, $network, $blockId);
+		$pk = BlockActorDataPacket::create($blockpos, new CacheableNbt($nbt));
 		$network->addToSendBuffer($pk);
 		if($double){
 			InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($player) :void{
@@ -133,7 +135,11 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	}
 
 	// If it returns false, the event is canceled.
-	public function onTransaction(InvLibAction $action) : bool{}
+	public function onAction(InventoryAction $action) : bool{}
+
+	final public function close(Player $player) : void{
+		$this->onClose($player);
+	}
 
 	final public function getTitle() : string{
 		return $this->title;
