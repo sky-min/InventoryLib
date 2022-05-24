@@ -51,10 +51,22 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
+use function microtime;
 use function spl_object_id;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
+
+	private static array $playertime = [];
+
+	final public static function checkTime(Player $player) : bool{
+		$id = spl_object_id($player);
+		if(isset(self::$playertime[$id]) && microtime(true) - self::$playertime[$id] < 0.45){
+			return false;
+		}
+		self::$playertime[$id] = microtime(true);
+		return true;
+	}
 
 	final protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
 		$pk = UpdateBlockPacket::create(
@@ -74,10 +86,14 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	}
 
 	final public function send(Player $player) : void{
+		// If try quickly, you will get an error.
+		// error prevention
+		if(!self::checkTime($player)) return;
+		// Setting holder
 		$pos = $player->getPosition();
 		$y = $pos->y;
-		if($y - 2 > -64 && $y - 2 < 256){
-			$y -= 2;
+		if($y - 3 > -64 && $y - 3 < 256){
+			$y -= 3;
 		}elseif($y + 3 > -64 && $y + 3 < 256){
 			$y += 3;
 		}else{
@@ -171,7 +187,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	public function onAction(InventoryAction $action) : bool{}
 
 	// Player::removeCurrentWindow() does not work with the next Window.
-	final public function close(Player $player) : void{ //
+	final public function close(Player $player) : void{ 
 		$this->onClose($player);
 		(fn() => $this->currentWindow = null)->call($player);
 	}
