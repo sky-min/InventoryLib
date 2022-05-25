@@ -35,11 +35,9 @@ use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 
 use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\block\tile\Spawnable;
 use pocketmine\block\{Block, BlockFactory};
 
-use pocketmine\block\tile\Spawnable;
-
-use function microtime;
 use function spl_object_id;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
@@ -53,21 +51,14 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	}
 
 	final public function send(Player $player) : void{
-		// Setting holder
 		$pos = $player->getPosition();
-		$y = $pos->y;
-		if($y - 3 > -64 && $y - 3 < 256){
-			$y -= 3;
-		}elseif($y + 3 > -64 && $y + 3 < 256){
-			$y += 3;
-		}else{
-			return;
+		$vec = $player->getDirectionVector()->multiply(-4)->addVector($pos);
+		if($vec->y < -64 || $vec->y + 1 < -64){
+			$vec->y += 1;
+		}elseif($vec->y > 256 || $vec->y - 1 > 256){
+			$vec->y -= 1;
 		}
-		$this->holder = $holder = new Position(
-			(int) $pos->x,
-			(int) $y,
-			(int) $pos->z, $pos->world
-		);
+		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
 		$session = PlayerManager::getInstance()->get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
@@ -84,6 +75,11 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			$session->sendBlock($holder->add(1, 0, 0), $blockId);
 		}
 		$session->sendBlock($holder, $blockId, $nbt);
+	}
+
+	public function onClose(Player $who) : void{
+		parent::onClose($who);
+		$this->sendRealBlock($who);
 	}
 
 	// If it returns false, the event is canceled.
@@ -105,7 +101,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		return $this->type;
 	}
 
-		/** @internal */
+	/** @internal */
 	final public function sendRealBlock(Player $player) : void{
 		$session = PlayerManager::getInstance()->get($player);
 		$holder = $this->holder;

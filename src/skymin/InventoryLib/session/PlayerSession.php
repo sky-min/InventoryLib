@@ -47,11 +47,12 @@ final class PlayerSession{
 		if($current !== null){
 			$player = $this->network->getPlayer();
 			if($current === $player->getCurrentWindow()){
-				(new InventoryCloseEvent($current, $player))->call();
+				(new InventoryCloseEvent($this->current, $player))->call();
 				$current->onClose($player);
 				(fn() => $this->currentWindow = null)->call($player);
+			}else{
+				$current->sendRealBlock($player);
 			}
-			$current->sendRealBlock($player);
 			$this->current = null;
 		}
 	}
@@ -69,6 +70,10 @@ final class PlayerSession{
 			$pk = BlockActorDataPacket::create($pos, $tile instanceof CacheableNbt ? $tile : new CacheableNbt($tile));
 			$this->network->sendDataPacket($pk);
 		}
+	}
+
+	public function getCurrent() : ?BaseInventory{
+		return $this->current;
 	}
 
 }
