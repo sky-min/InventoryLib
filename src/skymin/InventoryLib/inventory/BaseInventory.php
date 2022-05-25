@@ -27,56 +27,23 @@ namespace skymin\InventoryLib\inventory;
 
 use skymin\InventoryLib\InvLibHandler;
 use skymin\InventoryLib\action\InventoryAction;
+use skymin\InventoryLib\session\PlayerManager;
 
 use pocketmine\player\Player;
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 
 use pocketmine\world\Position;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\{Block, BlockFactory};
 
-use pocketmine\network\mcpe\protocol\{
-	ContainerOpenPacket,
-	BlockActorDataPacket,
-	UpdateBlockPacket
-};
-
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\event\inventory\InventoryOpenEvent;
-
-use pocketmine\network\mcpe\NetworkSession;
-use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
-
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
-use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
 use function microtime;
 use function spl_object_id;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
-
-	private static array $playertime = [];
-
-	final public static function checkTime(Player $player) : bool{
-		$id = spl_object_id($player);
-		if(isset(self::$playertime[$id]) && microtime(true) - self::$playertime[$id] < 0.41){
-			return false;
-		}
-		self::$playertime[$id] = microtime(true);
-		return true;
-	}
-
-	final protected static function sendBlock(BlockPosition $pos, NetworkSession $network, int $blockId) :void{
-		$pk = UpdateBlockPacket::create(
-			$pos,
-			RuntimeBlockMapping::getInstance()->toRuntimeId($blockId),
-			UpdateBlockPacket::FLAG_NETWORK,
-			UpdateBlockPacket::DATA_LAYER_NORMAL
-		);
-		$network->sendDataPacket($pk);
-	}
 
 	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
@@ -86,9 +53,6 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	}
 
 	final public function send(Player $player) : void{
-		// If try quickly, you will get an error.
-		// error prevention
-		if(!self::checkTime($player)) return;
 		// Setting holder
 		$pos = $player->getPosition();
 		$y = $pos->y;
@@ -104,50 +68,22 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			(int) $y,
 			(int) $pos->z, $pos->world
 		);
-		// Send FakeBlock
+		$session = PlayerManager::getInstance()->get($player);
 		$type = $this->type;
-		$network = $player->getNetworkSession();
-		$x = $holder->x;
-		$y = $holder->y;
-		$z = $holder->z;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
 			->setString('CustomName', $this->title)
-			->setInt('x', $x)
-			->setInt('y', $y)
-			->setInt('z', $z);
+			->setInt('x', $holder->x)
+			->setInt('y', $holder->y)
+			->setInt('z', $holder->z);
 		if($type->isDouble()){
-			$x2 = $x + 1;
-			$nbt->setInt('pairx', $x2)->setInt('pairz', $z);
-			self::sendBlock(new BlockPosition($x2, $y, $z), $network, $blockId);
+			$nbt->setInt('pairx', $holder->x + 1)->setInt('pairz', $holder->z);
+			$session->sendBlock($holder->add(1, 0, 0), $blockId);
 		}
-		$blockpos = new BlockPosition($x, $y, $z);
-		self::sendBlock($blockpos, $network, $blockId);
-		$pk = BlockActorDataPacket::create($blockpos, new CacheableNbt($nbt));
-		$network->sendDataPacket($pk);
-		//Player::setCurrentWindow only applies to Chest...
-		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($player, $network, $type, $blockpos) : void{
-			if(!$network->isConnected()) return;
-			$ev = new InventoryOpenEvent($this, $player);
-			$ev->call();
-			if($ev->isCancelled()){
-				$this->sendRealBlock($player);
-				return;
-			}
-			$player->removeCurrentWindow();
-			$inventoryManager = $network->getInvManager();
-			$pk = ContainerOpenPacket::blockInv(
-				(fn(BaseInventory $inv) => $this->addDynamic($inv))->call($inventoryManager, $this),
-				$type->getWindowType(),
-				$blockpos
-			);
-			$network->sendDataPacket($pk);
-			$inventoryManager->syncContents($this);
-			$this->onOpen($player);
-			(fn(BaseInventory $inv) => $this->currentWindow = $inv)->call($player, $this);
-		}), 8);
+		$session->sendBlock($holder, $blockId, $nbt);
+		$session->waitOpen($this);
 	}
 
 	public function onClose(Player $who) : void{
@@ -155,31 +91,28 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$this->sendRealBlock($who);
 	}
 
-	final protected function sendRealBlock(Player $player) : void{
-		$network = $player->getNetworkSession();
+	/** @internal */
+	final public function sendRealBlock(Player $player) : void{
+		$session = PlayerManager::getInstance()->get($player);
 		$holder = $this->holder;
-		$x = $holder->x;
-		$y = $holder->y;
-		$z = $holder->z;
 		$world = $holder->world;
-		$blockpos = new BlockPosition($x,$y,$z);
-		$block = $world->getBlockAt($x, $y, $z);
-		self::sendBlock($blockpos, $network, $block->getFullId());
-		$tile = $world->getTileAt($x, $y, $z);
+		$vec = $holder->asVector3();
+		$blockId = $world->getBlock($vec)->getFullId();
+		$nbt = null;
+		$tile = $world->getTile($vec);
 		if($tile instanceof Spawnable){
-			$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
-			$network->sendDataPacket($pk);
+			$nbt = $tile->getSerializedSpawnCompound();
 		}
+		$session->sendBlock($vec, $blockId, $nbt);
 		if($this->type->isDouble()){
-			$x += 1;
-			$block = $world->getBlockAt($x, $y, $z);
-			$blockpos = new BlockPosition($x,$y,$z);
-			self::sendBlock($blockpos, $network, $block->getFullId());
-			$tile = $world->getTileAt($x, $y, $z);
+			$vec = $holder->add(1, 0, 0);
+			$blockId = $world->getBlock($vec)->getFullId();
+			$nbt = null;
+			$tile = $world->getTile($vec);
 			if($tile instanceof Spawnable){
-				$pk = BlockActorDataPacket::create($blockpos, $tile->getSerializedSpawnCompound());
-				$network->sendDataPacket($pk);
+				$nbt = $tile->getSerializedSpawnCompound();
 			}
+			$session->sendBlock($vec, $blockId, $nbt);
 		}
 	}
 
