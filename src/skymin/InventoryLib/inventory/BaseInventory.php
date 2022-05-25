@@ -69,6 +69,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			(int) $pos->z, $pos->world
 		);
 		$session = PlayerManager::getInstance()->get($player);
+		$session->waitOpenWindow($this);
 		$type = $this->type;
 		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
 		$nbt = CompoundTag::create()
@@ -83,15 +84,28 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			$session->sendBlock($holder->add(1, 0, 0), $blockId);
 		}
 		$session->sendBlock($holder, $blockId, $nbt);
-		$session->waitOpen($this);
 	}
 
-	public function onClose(Player $who) : void{
-		parent::onClose($who);
-		$this->sendRealBlock($who);
+	// If it returns false, the event is canceled.
+	public function onAction(InventoryAction $action) : bool{}
+
+	final public function close(Player $player) : void{ 
+		PlayerManager::getInstance()->get($player)->closeWindow();
 	}
 
-	/** @internal */
+	final public function getTitle() : string{
+		return $this->title;
+	}
+
+	final public function setTitle(string $title) : void{
+		$this->title = $title;
+	}
+
+	final public function getTypeInfo() : InvType{
+		return $this->type;
+	}
+
+		/** @internal */
 	final public function sendRealBlock(Player $player) : void{
 		$session = PlayerManager::getInstance()->get($player);
 		$holder = $this->holder;
@@ -114,27 +128,6 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			}
 			$session->sendBlock($vec, $blockId, $nbt);
 		}
-	}
-
-	// If it returns false, the event is canceled.
-	public function onAction(InventoryAction $action) : bool{}
-
-	// Player::removeCurrentWindow() does not work with the next Window.
-	final public function close(Player $player) : void{ 
-		$this->onClose($player);
-		(fn() => $this->currentWindow = null)->call($player);
-	}
-
-	final public function getTitle() : string{
-		return $this->title;
-	}
-
-	final public function setTitle(string $title) : void{
-		$this->title = $title;
-	}
-
-	final public function getTypeInfo() : InvType{
-		return $this->type;
 	}
 
 }

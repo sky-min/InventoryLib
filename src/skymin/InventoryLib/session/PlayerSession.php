@@ -10,6 +10,8 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\scheduler\ClosureTask;
 
+use pocketmine\event\inventory\InventoryCloseEvent;
+
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
@@ -23,26 +25,35 @@ use function spl_object_id;
 
 final class PlayerSession{
 
-	private array $stack = [];
+	private ?BaseInventory $current = null;
 
 	public function __construct(private NetworkSession $network){}
 
-	public function reset() : void{
-		foreach($this->stack as $key => $task){
-			$task->getHandler()->cancel();
-			unset($this->stack[$key]);
+	public function waitOpenWindow(BaseInventory $inv) : void{
+		if($this->current !== null){
+			$this->current->sendRealBlock($this->network->getPlayer());
 		}
-	}
-
-	public function waitOpen(BaseInventory $inv) : void{
-		$task = new ClosureTask(function() use($inv): void{
+		$this->current = $inv;
+		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($inv): void{
+			if($inv !== $this->current) return;
 			if($this->network->isConnected()){
 				$this->network->getPlayer()->setCurrentWindow($inv);
 			}
-			unset($this->stack[spl_object_id($inv)]);
-		});
-		$this->stack[spl_object_id($inv)] = $task;
-		InvLibHandler::getScheduler()->scheduleDelayedTask($task, 8 * count($this->stack));
+		}), 8);
+	}
+
+	public function closeWindow() : void{
+		$current = $this->current;
+		if($current !== null){
+			$player = $this->network->getPlayer();
+			if($current === $player->getCurrentWindow()){
+				(new InventoryCloseEvent($current, $player))->call();
+				$current->onClose($player);
+				(fn() => $this->currentWindow = null)->call($player);
+			}
+			$current->sendRealBlock($player);
+			$this->current = null;
+		}
 	}
 
 	public function sendBlock(Vector3 $pos, int $blockId, null|CompoundTag|CacheableNbt $tile = null) : void{

@@ -24,9 +24,7 @@ final class PlayerManager{
 			static::$sessions[spl_object_id($player)] = new PlayerSession($player->getNetworkSession());
 		}, EventPriority::MONITOR,  $plugin);
 		$pluginManager->registerEvent(PlayerQuitEvent::class, function(PlayerQuitEvent $ev) : void{
-			$id = spl_object_id($ev->getPlayer());
-			static::$sessions[$id]->reset();
-			unset(static::$sessions[$id]);
+			unset(static::$sessions[spl_object_id($ev->getPlayer())]);
 		}, EventPriority::MONITOR, $plugin);
 	}
 
