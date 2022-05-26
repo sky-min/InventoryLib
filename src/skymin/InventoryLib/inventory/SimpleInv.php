@@ -46,9 +46,7 @@ final class SimpleInv extends BaseInventory{
 			$this->actionHandler = $handler;
 			return;
 		}
-		Utils::validateCallableSignature(function(SimpleInv $inventory,  InventoryAction $action) : bool{
-            // Why no return?
-        }, $handler);
+		Utils::validateCallableSignature(function(SimpleInv $inventory,  InventoryAction $action) : bool{}, $handler);
 		$this->actionHandler = $handler;
 	}
 

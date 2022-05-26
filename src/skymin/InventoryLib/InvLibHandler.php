@@ -32,6 +32,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
 final class InvLibHandler{
+
 	private static ?TaskScheduler $scheduler = null;
 
 	public static function register(Plugin $plugin) : void{
@@ -45,4 +46,5 @@ final class InvLibHandler{
 	public static function getScheduler() : ?TaskScheduler{
 		return self::$scheduler;
 	}
+
 }
