@@ -25,7 +25,6 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\inventory;
 
-use LogicException;
 use skymin\InventoryLib\InvLibHandler;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\session\PlayerManager;
@@ -38,6 +37,8 @@ use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\block\BlockFactory;
+
+use LogicException;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;

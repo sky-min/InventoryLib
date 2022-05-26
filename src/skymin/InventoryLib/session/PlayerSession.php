@@ -50,7 +50,9 @@ final class PlayerSession{
 	public function __construct(private NetworkSession $network){}
 
 	public function waitOpenWindow(BaseInventory $inv) : void{
-        $this->current?->sendRealBlock($this->network->getPlayer());
+		if($this->current !== null){
+			$this->current->sendRealBlock($this->network->getPlayer());
+		}
 		$this->current = $inv;
 		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($inv): void{
 			if($inv !== $this->current) return;

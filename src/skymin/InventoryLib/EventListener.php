@@ -40,9 +40,9 @@ final class EventListener implements Listener{
 	public function omInvTransaction(InventoryTransactionEvent $ev) : void{
 		$transaction = $ev->getTransaction();
 		foreach($transaction->getActions() as $action){
-            if(!$action instanceof SlotChangeAction) continue;
-            $inventory = $action->getInventory();
-            if(!$inventory instanceof BaseInventory) continue;
+			if(!$action instanceof SlotChangeAction) continue;
+			$inventory = $action->getInventory();
+			if(!$inventory instanceof BaseInventory) continue;
 			if(!$inventory->onAction(new InventoryAction(
 				$transaction->getSource(),
 				$action->getSlot(),
