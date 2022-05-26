@@ -83,7 +83,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	}
 
 	// If it returns false, the event is canceled.
-	public function onAction(InventoryAction $action) : bool{}
+	abstract public function onAction(InventoryAction $action) : bool;
 
 	final public function close(Player $player) : void{ 
 		PlayerManager::getInstance()->get($player)->closeWindow();

@@ -69,9 +69,9 @@ final class PlayerSession{
 		if($current !== null){
 			$player = $this->network->getPlayer();
 			if($current === $player->getCurrentWindow()){
-				(new InventoryCloseEvent($this->current, $player))->call();
 				$current->onClose($player);
 				(fn() => $this->currentWindow = null)->call($player);
+				(new InventoryCloseEvent($this->current, $player))->call();
 			}else{
 				$current->sendRealBlock($player);
 			}
