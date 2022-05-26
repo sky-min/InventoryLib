@@ -31,9 +31,6 @@ use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
-
-use function reset;
-
 final class InvLibHandler{
 
 	private static ?TaskScheduler $scheduler = null;

@@ -36,9 +36,9 @@ use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
-use pocketmine\block\{Block, BlockFactory};
+use pocketmine\block\BlockFactory;
 
-use function spl_object_id;
+use LogicException;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
@@ -46,7 +46,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
 		if(InvLibHandler::getScheduler() === null){
-			throw new \LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
+			throw new LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
 		}
 	}
 

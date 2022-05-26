@@ -28,10 +28,10 @@ namespace skymin\InventoryLib;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
 
-use pocketmine\event\{Listener, EventPriority};
-use pocketmine\event\server\{DataPacketReceiveEvent, DataPacketSendEvent};
+use pocketmine\event\Listener;
+use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
-use pocketmine\inventory\transaction\action\{SlotChangeAction, DropItemAction};
+use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 
 final class EventListener implements Listener{
@@ -40,9 +40,9 @@ final class EventListener implements Listener{
 	public function omInvTransaction(InventoryTransactionEvent $ev) : void{
 		$transaction = $ev->getTransaction();
 		foreach($transaction->getActions() as $action){
+			if(!$action instanceof SlotChangeAction) continue;
 			$inventory = $action->getInventory();
 			if(!$inventory instanceof BaseInventory) continue;
-			if(!$action instanceof SlotChangeAction) continue;
 			if(!$inventory->onAction(new InventoryAction(
 				$transaction->getSource(),
 				$action->getSlot(),
@@ -62,7 +62,7 @@ final class EventListener implements Listener{
 		if(!$ev->isCancelled()) return;
 		$inventory = $ev->getInventory();
 		if($inventory instanceof BaseInventory){
-			$inventory->sendRealBlock($player);
+			$inventory->sendRealBlock($ev->getPlayer());
 		}
 	}
 

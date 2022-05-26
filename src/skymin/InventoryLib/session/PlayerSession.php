@@ -43,8 +43,6 @@ use pocketmine\network\mcpe\protocol\{
 };
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
-use function spl_object_id;
-
 final class PlayerSession{
 
 	private ?BaseInventory $current = null;
