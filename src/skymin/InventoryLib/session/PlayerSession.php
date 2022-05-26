@@ -43,8 +43,6 @@ use pocketmine\network\mcpe\protocol\{
 };
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
-use function spl_object_id;
-
 final class PlayerSession{
 
 	private ?BaseInventory $current = null;
@@ -52,9 +50,7 @@ final class PlayerSession{
 	public function __construct(private NetworkSession $network){}
 
 	public function waitOpenWindow(BaseInventory $inv) : void{
-		if($this->current !== null){
-			$this->current->sendRealBlock($this->network->getPlayer());
-		}
+        $this->current?->sendRealBlock($this->network->getPlayer());
 		$this->current = $inv;
 		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($inv): void{
 			if($inv !== $this->current) return;

@@ -25,13 +25,10 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\action;
 
-use skymin\InventoryLib\inventory\BaseInventory;
-
 use pocketmine\item\Item;
 use pocketmine\player\Player;
 
 final class InventoryAction{
-
 	public function __construct(
 		private Player $player,
 		private int $slot,
@@ -54,5 +51,4 @@ final class InventoryAction{
 	public function getTargetItem() : Item{
 		return $this->targetItem;
 	}
-
 }

@@ -25,6 +25,7 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\inventory;
 
+use LogicException;
 use skymin\InventoryLib\InvLibHandler;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\session\PlayerManager;
@@ -36,9 +37,7 @@ use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
-use pocketmine\block\{Block, BlockFactory};
-
-use function spl_object_id;
+use pocketmine\block\BlockFactory;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
@@ -46,7 +45,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
 		if(InvLibHandler::getScheduler() === null){
-			throw new \LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
+			throw new LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
 		}
 	}
 

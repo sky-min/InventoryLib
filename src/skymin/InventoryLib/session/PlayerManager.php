@@ -43,10 +43,10 @@ final class PlayerManager{
 		$pluginManager = Server::getInstance()->getPluginManager();
 		$pluginManager->registerEvent(PlayerJoinEvent::class, function(PlayerJoinEvent $ev) : void{
 			$player = $ev->getPlayer();
-			static::$sessions[spl_object_id($player)] = new PlayerSession($player->getNetworkSession());
+			self::$sessions[spl_object_id($player)] = new PlayerSession($player->getNetworkSession());
 		}, EventPriority::MONITOR,  $plugin);
 		$pluginManager->registerEvent(PlayerQuitEvent::class, function(PlayerQuitEvent $ev) : void{
-			unset(static::$sessions[spl_object_id($ev->getPlayer())]);
+			unset(self::$sessions[spl_object_id($ev->getPlayer())]);
 		}, EventPriority::MONITOR, $plugin);
 	}
 
