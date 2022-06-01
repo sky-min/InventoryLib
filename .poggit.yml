@@ -6,4 +6,7 @@ projects:
     path: ""
     model: virion
     type: library
+    libs:
+      - src: sky-min/EventAttribute/EventAttribute
+        version: ^1.0.3
 ...
