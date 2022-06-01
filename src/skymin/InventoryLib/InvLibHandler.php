@@ -31,6 +31,8 @@ use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
+use skymin\event\EventManager;
+
 final class InvLibHandler{
 
 	private static ?TaskScheduler $scheduler = null;
@@ -39,7 +41,7 @@ final class InvLibHandler{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
 			new PlayerManager($plugin);
-			Server::getInstance()->getPluginManager()->registerEvents(new EventListener(), $plugin);
+			EventManager::register(new EventListener(), $plugin);
 		}
 	}
 

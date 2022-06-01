@@ -28,15 +28,17 @@ namespace skymin\InventoryLib;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
 
-use pocketmine\event\Listener;
+use pocketmine\event\{Listener, EventPriority};
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 
+use skymin\event\{Priority, HandleCancelled};
+
 final class EventListener implements Listener{
 
-	/** @priority HIGHEST */
+	#[Priority(EventPriority::HIGHEST)]
 	public function omInvTransaction(InventoryTransactionEvent $ev) : void{
 		$transaction = $ev->getTransaction();
 		foreach($transaction->getActions() as $action){
@@ -54,10 +56,7 @@ final class EventListener implements Listener{
 		}
 	}
 
-	/**
-	 * @handleCancelled
-	 * @priority MONITOR
-	 */
+	#[handleCancelled, Priority(EventPriority::MONITOR)]
 	public function onInvOpen(InventoryOpenEvent $ev) : void{
 		if(!$ev->isCancelled()) return;
 		$inventory = $ev->getInventory();
@@ -66,7 +65,7 @@ final class EventListener implements Listener{
 		}
 	}
 
-	/** @priority MONITOR */
+	#[Priority(EventPriority::MONITOR)]
 	public function onContainerOpen(DataPacketSendEvent $ev) : void{
 		$packets = $ev->getPackets();
 		if(count($packets) !== 1) return;
