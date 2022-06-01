@@ -27,7 +27,6 @@ namespace skymin\InventoryLib;
 
 use skymin\InventoryLib\session\PlayerManager;
 
-use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
 
