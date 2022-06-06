@@ -35,8 +35,9 @@ use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 
 use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\block\tile\Spawnable;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\tile\Spawnable;
+use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 
 use LogicException;
 
@@ -74,7 +75,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			$nbt->setInt('pairx', $holder->x + 1)->setInt('pairz', $holder->z);
 			$session->sendBlock($holder->add(1, 0, 0), $blockId);
 		}
-		$session->sendBlock($holder, $blockId, $nbt);
+		$session->sendBlock($holder, $blockId, new CacheableNbt($nbt));
 	}
 
 	public function onClose(Player $who) : void{

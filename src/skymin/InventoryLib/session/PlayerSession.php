@@ -67,9 +67,7 @@ final class PlayerSession{
 		if($current !== null){
 			$player = $this->network->getPlayer();
 			if($current === $player->getCurrentWindow()){
-				$current->onClose($player);
-				(fn() => $this->currentWindow = null)->call($player);
-				(new InventoryCloseEvent($this->current, $player))->call();
+				$player->removeCurrentWindow();
 			}else{
 				$current->sendRealBlock($player);
 			}
@@ -77,7 +75,7 @@ final class PlayerSession{
 		}
 	}
 
-	public function sendBlock(Vector3 $pos, int $blockId, null|CompoundTag|CacheableNbt $tile = null) : void{
+	public function sendBlock(Vector3 $pos, int $blockId, ?CacheableNbt $tile = null) : void{
 		$pos = BlockPosition::fromVector3($pos);
 		$pk = UpdateBlockPacket::create(
 			$pos,
@@ -87,7 +85,7 @@ final class PlayerSession{
 		);
 		$this->network->sendDataPacket($pk);
 		if($tile !== null){
-			$pk = BlockActorDataPacket::create($pos, $tile instanceof CacheableNbt ? $tile : new CacheableNbt($tile));
+			$pk = BlockActorDataPacket::create($pos, $tile);
 			$this->network->sendDataPacket($pk);
 		}
 	}
