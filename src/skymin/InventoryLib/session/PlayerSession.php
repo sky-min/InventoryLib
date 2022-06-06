@@ -56,7 +56,7 @@ final class PlayerSession{
 		$this->current = $inv;
 		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($inv): void{
 			if($inv !== $this->current) return;
-			if($this->network->isConnected()){Bump api version to 4.4.0Bump api version to 4.4.
+			if($this->network->isConnected()){
 				$this->network->getPlayer()->setCurrentWindow($inv);
 			}
 		}), 8);
