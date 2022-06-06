@@ -30,7 +30,7 @@ use skymin\InventoryLib\inventory\BaseInventory;
 use pocketmine\item\Item;
 use pocketmine\player\Player;
 
-class InventoryAction{
+final class InventoryAction{
 
 	public function __construct(
 		private Player $player,
