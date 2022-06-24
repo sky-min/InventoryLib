@@ -46,7 +46,7 @@ final class PlayerManager{
 			self::$sessions[$player->getId()] = new PlayerSession($player->getNetworkSession());
 		}, EventPriority::MONITOR,  $plugin);
 		$pluginManager->registerEvent(PlayerQuitEvent::class, function(PlayerQuitEvent $ev) : void{
-			unset(self::$sessions[spl_object_id($ev->getPlayer())]);
+			unset(self::$sessions[$ev->getPlayer()->getId()]);
 		}, EventPriority::MONITOR, $plugin);
 	}
 

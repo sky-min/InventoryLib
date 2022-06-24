@@ -1,0 +1,14 @@
+{
+  "name": "skymin/InventoryLib",
+  "description": "PMMP Fake inventory tool virion",
+  "type": "library",
+  "license": "MIT",
+  "require-dev": {
+    "pocketmine/pocketmine-mp": ">=4.4.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "skymin\\InventoryLib\\": "src/"
+    }
+  }
+}
