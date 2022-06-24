@@ -3,6 +3,9 @@
   "description": "PMMP Fake inventory tool virion",
   "type": "library",
   "license": "MIT",
+  "require": {
+    "php": "^8.0",
+  },
   "require-dev": {
     "pocketmine/pocketmine-mp": ">=4.4.1"
   },
