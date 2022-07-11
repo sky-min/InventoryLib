@@ -25,9 +25,14 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\inventory;
 
-use pocketmine\utils\EnumTrait;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\{
+	Block,
+	BlockFactory,
+	BlockTypeIds,
+	VanillaBlocks
+};
 use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
+use pocketmine\utils\EnumTrait;
 
 
 /**
@@ -43,18 +48,18 @@ final class InvType{
 
 	protected static function setup() : void{
 		self::registerAll(
-			new self('chest', 27),
-			new self('double_chest', 54),
-			new self('dropper', 9, WindowTypes::DROPPER, BlockLegacyIds::DROPPER),
-			new self('hopper', 5, WindowTypes::HOPPER, BlockLegacyIds::HOPPER_BLOCK)
+			new self('chest', 27, WindowTypes::CONTAINER, VanillaBlocks::CHEST()->getStateId()),
+			new self('double_chest', 54, WindowTypes::CONTAINER, VanillaBlocks::CHEST()->getStateId()),
+			//TODO: not yet added to pm5 new self('dropper', 9, WindowTypes::DROPPER, VanillaBlocks::DROPPER()->getStateId()), 
+			new self('hopper', 5, WindowTypes::HOPPER, VanillaBlocks::HOPPER()->getStateId())
 		);
 	}
 
 	private function __construct(
 		string $name,
 		private int $size,
-		private int $type = WindowTypes::CONTAINER,
-		private int $block = BlockLegacyIds::CHEST
+		private int $type,
+		private int $blockId
 	){
 		$this->Enum_construct($name);
 	}
@@ -72,7 +77,7 @@ final class InvType{
 	}
 
 	public function getBlockId() : int{
-		return $this->block;
+		return $this->blockId;
 	}
 
 }

@@ -63,7 +63,8 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$session = PlayerManager::getInstance()->get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
-		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
+		$blockId = $type->getBlockId();
+		var_dump($blockId);
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
@@ -108,7 +109,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$holder = $this->holder;
 		$world = $holder->world;
 		$vec = $holder->asVector3();
-		$blockId = $world->getBlock($vec)->getFullId();
+		$blockId = $world->getBlock($vec)->getStateId();
 		$nbt = null;
 		$tile = $world->getTile($vec);
 		if($tile instanceof Spawnable){
@@ -117,7 +118,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$session->sendBlock($vec, $blockId, $nbt);
 		if($this->type->isDouble()){
 			$vec = $holder->add(1, 0, 0);
-			$blockId = $world->getBlock($vec)->getFullId();
+			$blockId = $world->getBlock($vec)->getStateId();
 			$nbt = null;
 			$tile = $world->getTile($vec);
 			if($tile instanceof Spawnable){
