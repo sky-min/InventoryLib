@@ -25,12 +25,19 @@ declare(strict_types = 1);
 
 namespace skymin\InventoryLib\session;
 
+use skymin\InventoryLib\inventory\BaseInventory;
+
 use pocketmine\Server;
 use pocketmine\plugin\Plugin;
 use pocketmine\player\Player;
+use pocketmine\inventory\Inventory;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\event\EventPriority;
 use pocketmine\event\player\{PlayerJoinEvent, PlayerQuitEvent};
+use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
+
+use skymin\event\EventHandler;
 
 final class PlayerManager{
 	use SingletonTrait;
@@ -38,20 +45,36 @@ final class PlayerManager{
 	/** @var PlayerSession[] */
 	private static array $sessions = [];
 
-	public function __construct(Plugin $plugin){
+	public function __construct(){
 		self::setInstance($this);
-		$pluginManager = Server::getInstance()->getPluginManager();
-		$pluginManager->registerEvent(PlayerJoinEvent::class, function(PlayerJoinEvent $ev) : void{
-			$player = $ev->getPlayer();
-			self::$sessions[$player->getId()] = new PlayerSession($player->getNetworkSession());
-		}, EventPriority::MONITOR,  $plugin);
-		$pluginManager->registerEvent(PlayerQuitEvent::class, function(PlayerQuitEvent $ev) : void{
-			unset(self::$sessions[$ev->getPlayer()->getId()]);
-		}, EventPriority::MONITOR, $plugin);
 	}
 
 	public function get(Player $player) : ?PlayerSession{
 		return self::$sessions[$player->getId()] ?? null;
+	}
+
+	#[EventHandler(EventPriority::MONITOR)]
+	public function onJoin(PlayerJoinEvent $ev) : void{
+		$player = $ev->getPlayer();
+		$network = $player->getNetworkSession();
+		$callbacks = $network->getInvManager()?->getContainerOpenCallbacks();
+		if($callbacks === null) return;
+		$previous = $callbacks->toArray();
+		$callbacks->clear();
+		$callbacks->add(function(int $id, Inventory $inv) : ?array{
+			if(!$inv instanceof BaseInventory) return null;
+			return [ContainerOpenPacket::blockInv(
+				$id,
+				$inv->getTypeInfo()->getWindowType(),
+				BlockPosition::fromVector3($inv->getHolder())
+			)];
+		}, ...$previous);
+		self::$sessions[$player->getId()] = new PlayerSession($network);
+	}
+
+	#[EventHandler(EventPriority::MONITOR)]
+	public function onQuit(PlayerQuitEvent $ev) : void{
+		unset(self::$sessions[$ev->getPlayer()->getId()]);
 	}
 
 }

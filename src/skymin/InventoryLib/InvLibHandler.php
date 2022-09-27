@@ -39,7 +39,7 @@ final class InvLibHandler{
 	public static function register(Plugin $plugin) : void{
 		if(self::$scheduler === null){
 			self::$scheduler = $plugin->getScheduler();
-			new PlayerManager($plugin);
+			EventManager::register(new PlayerManager(), $plugin);
 			EventManager::register(new EventListener(), $plugin);
 		}
 	}

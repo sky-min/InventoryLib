@@ -63,7 +63,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$session = PlayerManager::getInstance()->get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
-		$blockId = BlockFactory::getInstance()->get($type->getBlockId(), 0)->getFullId();
+		$blockId = $type->getBlockId();
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
