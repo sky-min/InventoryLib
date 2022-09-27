@@ -64,7 +64,6 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$session->waitOpenWindow($this);
 		$type = $this->type;
 		$blockId = $type->getBlockId();
-		var_dump($blockId);
 		$nbt = CompoundTag::create()
 			->setString('id', 'Chest')
 			->setInt('Chest', 1)
