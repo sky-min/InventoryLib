@@ -38,7 +38,6 @@ use pocketmine\utils\EnumTrait;
 /**
  * @method static self CHEST()
  * @method static self DOUBLE_CHEST()
- * @method static self DROPPER()
  * @method static self HOPPER()
  */
 final class InvType{
@@ -48,19 +47,22 @@ final class InvType{
 
 	protected static function setup() : void{
 		self::registerAll(
-			new self('chest', 27, WindowTypes::CONTAINER, VanillaBlocks::CHEST()->getStateId()),
-			new self('double_chest', 54, WindowTypes::CONTAINER, VanillaBlocks::CHEST()->getStateId()),
+			new self('chest', 27, WindowTypes::CONTAINER, VanillaBlocks::CHEST()),
+			new self('double_chest', 54, WindowTypes::CONTAINER, VanillaBlocks::CHEST()),
 			//TODO: not yet added to pm5 new self('dropper', 9, WindowTypes::DROPPER, VanillaBlocks::DROPPER()->getStateId()), 
-			new self('hopper', 5, WindowTypes::HOPPER, VanillaBlocks::HOPPER()->getStateId())
+			new self('hopper', 5, WindowTypes::HOPPER, VanillaBlocks::HOPPER())
 		);
 	}
+
+	private int $blockId;
 
 	private function __construct(
 		string $name,
 		private int $size,
 		private int $type,
-		private int $blockId
+		private Block $block
 	){
+		$this->blockId = $block->getStateId();
 		$this->Enum_construct($name);
 	}
 

@@ -57,19 +57,18 @@ final class PlayerManager{
 	public function onJoin(PlayerJoinEvent $ev) : void{
 		$player = $ev->getPlayer();
 		$network = $player->getNetworkSession();
-		$invManager = $network->getInvManager();
-		if($invManager === null){
-			$player->kick();
-			return;
-		}
-		$invManager->getContainerOpenCallbacks()->add(function(int $id, Inventory $inv) : ?array{
+		$callbacks = $network->getInvManager()?->getContainerOpenCallbacks();
+		if($callbacks === null) return;
+		$previous = $callbacks->toArray();
+		$callbacks->clear();
+		$callbacks->add(function(int $id, Inventory $inv) : ?array{
 			if(!$inv instanceof BaseInventory) return null;
 			return [ContainerOpenPacket::blockInv(
 				$id,
 				$inv->getTypeInfo()->getWindowType(),
 				BlockPosition::fromVector3($inv->getHolder())
 			)];
-		});
+		}, ...$previous);
 		self::$sessions[$player->getId()] = new PlayerSession($network);
 	}
 
