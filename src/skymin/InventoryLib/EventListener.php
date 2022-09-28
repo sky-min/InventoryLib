@@ -27,11 +27,16 @@ namespace skymin\InventoryLib;
 
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
+use skymin\InventoryLib\session\PlayerManager;
 
 use pocketmine\event\EventPriority;
-use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
+use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\event\inventory\{
+	InventoryOpenEvent,
+	InventoryTransactionEvent
+};
 use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\network\mcpe\protocol\NetworkStackLatencyPacket;
 
 use skymin\event\EventHandler;
 
@@ -64,6 +69,16 @@ final class EventListener{
 		$inventory = $ev->getInventory();
 		if($inventory instanceof BaseInventory){
 			$inventory->sendRealBlock($ev->getPlayer());
+		}
+	}
+
+	#[EventHandler]
+	public function onDataRecieve(DataPacketReceiveEvent $ev) : void{
+		if($ev->getPacket() instanceof NetworkStackLatencyPacket){
+			$player = $ev->getOrigin()->getPlayer();
+			if($player !== null){
+				PlayerManager::getInstance()->get($player)?->notify();
+			}
 		}
 	}
 

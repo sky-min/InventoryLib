@@ -44,11 +44,14 @@ use LogicException;
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
 
+	private PlayerManager $player_manager;
+
 	public function __construct(private InvType $type, private string $title = ''){
 		parent::__construct($this->type->getSize());
-		if(InvLibHandler::getScheduler() === null){
+		if(!InvLibHandler::isRegistered()){
 			throw new LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
 		}
+		$this->player_manager = PlayerManager::getInstance();
 	}
 
 	final public function send(Player $player) : void{
@@ -60,7 +63,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 			$vec->y -= 1;
 		}
 		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
-		$session = PlayerManager::getInstance()->get($player);
+		$session = $this->player_manager->get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
 		$blockId = $type->getBlockId();
@@ -80,14 +83,14 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	public function onClose(Player $who) : void{
 		parent::onClose($who);
-		$this->sendRealBlock($who);
+		$this->player_manager->get($who)->onClose($this);
 	}
 
 	// If it returns false, the event is canceled.
 	abstract public function onAction(InventoryAction $action) : bool;
 
 	final public function close(Player $player) : void{ 
-		PlayerManager::getInstance()->get($player)->closeWindow();
+		$this->player_manager->get($player)->closeWindow();
 	}
 
 	final public function getTitle() : string{
@@ -100,31 +103,6 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	final public function getTypeInfo() : InvType{
 		return $this->type;
-	}
-
-	/** @internal */
-	final public function sendRealBlock(Player $player) : void{
-		$session = PlayerManager::getInstance()->get($player);
-		$holder = $this->holder;
-		$world = $holder->world;
-		$vec = $holder->asVector3();
-		$blockId = $world->getBlock($vec)->getStateId();
-		$nbt = null;
-		$tile = $world->getTile($vec);
-		if($tile instanceof Spawnable){
-			$nbt = $tile->getSerializedSpawnCompound();
-		}
-		$session->sendBlock($vec, $blockId, $nbt);
-		if($this->type->isDouble()){
-			$vec = $holder->add(1, 0, 0);
-			$blockId = $world->getBlock($vec)->getStateId();
-			$nbt = null;
-			$tile = $world->getTile($vec);
-			if($tile instanceof Spawnable){
-				$nbt = $tile->getSerializedSpawnCompound();
-			}
-			$session->sendBlock($vec, $blockId, $nbt);
-		}
 	}
 
 }
