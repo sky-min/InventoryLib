@@ -34,18 +34,18 @@ use skymin\event\EventManager;
 
 final class InvLibHandler{
 
-	private static ?TaskScheduler $scheduler = null;
+	private static bool $isRegistered = false;
 
 	public static function register(Plugin $plugin) : void{
-		if(self::$scheduler === null){
-			self::$scheduler = $plugin->getScheduler();
+		if(!self::$isRegistered){
 			EventManager::register(new PlayerManager(), $plugin);
 			EventManager::register(new EventListener(), $plugin);
+			self::$isRegistered = true;
 		}
 	}
 
-	public static function getScheduler() : ?TaskScheduler{
-		return self::$scheduler;
+	public static function isRegistered() : bool{
+		return self::$isRegistered;
 	}
 
 }

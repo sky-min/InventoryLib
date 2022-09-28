@@ -39,27 +39,45 @@ use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
 use pocketmine\network\mcpe\protocol\{
 	BlockActorDataPacket,
+	NetworkStackLatencyPacket,
 	UpdateBlockPacket
 };
 use pocketmine\network\mcpe\protocol\types\{CacheableNbt, BlockPosition};
 
+use Closure;
 final class PlayerSession{
 
 	private ?BaseInventory $current = null;
 
+	private ?Closure $waitClosure = null;
+
 	public function __construct(private NetworkSession $network){}
 
 	public function waitOpenWindow(BaseInventory $inv) : void{
+		$waitCount = 2;
 		if($this->current !== null){
-			$this->current->sendRealBlock($this->network->getPlayer());
+			$this->sendRealBlock($this->current);
+			$waitCount = 8;
 		}
 		$this->current = $inv;
-		InvLibHandler::getScheduler()->scheduleDelayedTask(new ClosureTask(function() use($inv): void{
-			if($inv !== $this->current) return;
-			if($this->network->isConnected()){
-				$this->network->getPlayer()->setCurrentWindow($inv);
+		$this->wait(function() use($inv, &$waitCount) : bool{
+			if($inv !== $this->current || !$this->network->isConnected()){
+				$this->waitClosure = null;
+				return true;
 			}
-		}), 8);
+			if(--$waitCount === 0){
+				$this->waitClosure = null;
+				$this->network->getPlayer()->setCurrentWindow($inv);
+				return true;
+			}
+			return false;
+		});
+	}
+
+	public function onClose(BaseInventory $current) : void{
+		$this->sendRealBlock($current);
+		$this->current = null;
+		$this->waitClosure = null;
 	}
 
 	public function closeWindow() : void{
@@ -69,9 +87,10 @@ final class PlayerSession{
 			if($current === $player->getCurrentWindow()){
 				$player->removeCurrentWindow();
 			}else{
-				$current->sendRealBlock($player);
+				$this->sendRealBlock($current);
+				$this->current = null;
+				$this->waitClosure = null;
 			}
-			$this->current = null;
 		}
 	}
 
@@ -90,8 +109,43 @@ final class PlayerSession{
 		}
 	}
 
+	private function sendRealBlock(BaseInventory $current) : void{
+		$holder = $current->getHolder();
+		$world = $holder->world;
+		$vec = $holder->asVector3();
+		$blockId = $world->getBlock($vec)->getStateId();
+		$nbt = null;
+		$tile = $world->getTile($vec);
+		if($tile instanceof Spawnable){
+			$nbt = $tile->getSerializedSpawnCompound();
+		}
+		$this->sendBlock($vec, $blockId, $nbt);
+		if($current->getTypeInfo()->isDouble()){
+			$vec = $holder->add(1, 0, 0);
+			$blockId = $world->getBlock($vec)->getStateId();
+			$nbt = null;
+			$tile = $world->getTile($vec);
+			if($tile instanceof Spawnable){
+				$nbt = $tile->getSerializedSpawnCompound();
+			}
+			$this->sendBlock($vec, $blockId, $nbt);
+		}
+	}
+
 	public function getCurrent() : ?BaseInventory{
 		return $this->current;
+	}
+
+	private function wait(Closure $then) : void{
+		$this->network->sendDataPacket(NetworkStackLatencyPacket::request(1));
+		$this->waitClosure = $then;
+	}
+
+	public function notify() : void{
+		if($this->waitClosure === null) return;
+		if(!($this->waitClosure)()){
+			$this->network->sendDataPacket(NetworkStackLatencyPacket::request(1));
+		}
 	}
 
 }
