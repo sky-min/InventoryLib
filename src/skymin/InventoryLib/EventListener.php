@@ -28,18 +28,17 @@ namespace skymin\InventoryLib;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
 
-use pocketmine\event\{Listener, EventPriority};
+use pocketmine\event\EventPriority;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
 use pocketmine\inventory\transaction\action\SlotChangeAction;
-use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 
-use skymin\event\{Priority, HandleCancelled};
+use skymin\event\EventHandler;
 
-final class EventListener implements Listener{
+final class EventListener{
 
-	#[Priority(EventPriority::HIGHEST)]
-	public function omInvTransaction(InventoryTransactionEvent $ev) : void{
+	#[EventHandler]
+	public function onInvTransaction(InventoryTransactionEvent $ev) : void{
 		$transaction = $ev->getTransaction();
 		foreach($transaction->getActions() as $action){
 			if(!$action instanceof SlotChangeAction) continue;
@@ -56,29 +55,15 @@ final class EventListener implements Listener{
 		}
 	}
 
-	#[handleCancelled, Priority(EventPriority::MONITOR)]
+	#[EventHandler(
+		EventPriority::MONITOR,
+		true
+	)]
 	public function onInvOpen(InventoryOpenEvent $ev) : void{
 		if(!$ev->isCancelled()) return;
 		$inventory = $ev->getInventory();
 		if($inventory instanceof BaseInventory){
 			$inventory->sendRealBlock($ev->getPlayer());
-		}
-	}
-
-	#[Priority(EventPriority::MONITOR)]
-	public function onContainerOpen(DataPacketSendEvent $ev) : void{
-		$packets = $ev->getPackets();
-		if(count($packets) !== 1) return;
-		$packet = reset($packets);
-		if(!$packet instanceof ContainerOpenPacket) return;
-		$targets = $ev->getTargets();
-		if(count($targets) !== 1) return;
-		$target = reset($targets);
-		$invManager = $target->getInvManager();
-		if($invManager === null) return;
-		$inv = $invManager->getWindow($packet->windowId);
-		if($inv instanceof BaseInventory){
-			$packet->windowType = $inv->getTypeInfo()->getWindowType();
 		}
 	}
 
