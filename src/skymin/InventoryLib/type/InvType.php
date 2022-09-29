@@ -23,51 +23,25 @@
 
 declare(strict_types = 1);
 
-namespace skymin\InventoryLib\inventory;
+namespace skymin\InventoryLib\type;
 
-use pocketmine\block\{
-	Block,
-	BlockFactory,
-	BlockTypeIds,
-	VanillaBlocks
-};
-use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
-use pocketmine\utils\EnumTrait;
+use pocketmine\block\Block;
 
-
-/**
- * @method static self CHEST()
- * @method static self DOUBLE_CHEST()
- * @method static self HOPPER()
- */
 final class InvType{
-	use EnumTrait{
-		__construct as Enum_construct;
-	}
-
-	protected static function setup() : void{
-		self::registerAll(
-			new self('chest', 27, WindowTypes::CONTAINER, VanillaBlocks::CHEST()),
-			new self('double_chest', 54, WindowTypes::CONTAINER, VanillaBlocks::CHEST()),
-			//TODO: not yet added to pm5 new self('dropper', 9, WindowTypes::DROPPER, VanillaBlocks::DROPPER()->getStateId()), 
-			new self('hopper', 5, WindowTypes::HOPPER, VanillaBlocks::HOPPER())
-		);
-	}
 
 	private int $blockId;
 
-	private function __construct(
-		string $name,
+	public function __construct(
 		private int $size,
 		private int $type,
-		private Block $block
+		private Block $block,
+		private bool $isDouble = false
 	){
 		$this->blockId = $block->getStateId();
-		$this->Enum_construct($name);
 	}
 
 	public function isDouble() : bool{
-		return $this->equals(self::DOUBLE_CHEST());
+		return $this->isDouble;
 	}
 
 	public function getSize() : int{
