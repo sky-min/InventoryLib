@@ -26,6 +26,7 @@ declare(strict_types = 1);
 namespace skymin\InventoryLib;
 
 use skymin\InventoryLib\session\PlayerManager;
+use skymin\InventoryLib\type\InvTypeRegistry;
 
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\TaskScheduler;
@@ -34,18 +35,26 @@ use skymin\event\EventManager;
 
 final class InvLibHandler{
 
-	private static bool $isRegistered = false;
+	private function __construct(){
+		//NOOP
+	}
+
+	private static ?InvTypeRegistry $registry = null;
 
 	public static function register(Plugin $plugin) : void{
-		if(!self::$isRegistered){
+		if(self::$registry === null){
 			EventManager::register(new PlayerManager(), $plugin);
 			EventManager::register(new EventListener(), $plugin);
-			self::$isRegistered = true;
+			self::$registry = new InvTypeRegistry();
 		}
 	}
 
 	public static function isRegistered() : bool{
-		return self::$isRegistered;
+		return self::$registry !== null;
+	}
+
+	public static function getRegistry() : ?InvTypeRegistry{
+		return self::$registry;
 	}
 
 }

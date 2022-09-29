@@ -28,6 +28,10 @@ namespace skymin\InventoryLib\inventory;
 use skymin\InventoryLib\InvLibHandler;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\session\PlayerManager;
+use skymin\InventoryLib\type\{
+	InvType,
+	InvTypeRegistry
+};
 
 use pocketmine\player\Player;
 use pocketmine\inventory\SimpleInventory;
@@ -46,17 +50,20 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 
 	private PlayerManager $player_manager;
 
-	public function __construct(private InvType $type, private string $title = ''){
-		parent::__construct($this->type->getSize());
+	private InvType $type;
+
+	public function __construct(string $identifier, private string $title = ''){
 		if(!InvLibHandler::isRegistered()){
 			throw new LogicException('Tried creating inventory before calling ' . InvLibHandler::class . 'register');
 		}
+		$this->type = InvLibHandler::getRegistry()->get($identifier);
+		parent::__construct($this->type->getSize());
 		$this->player_manager = PlayerManager::getInstance();
 	}
 
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
-		$vec = $player->getDirectionVector()->multiply(-4)->addVector($pos);
+		$vec = $player->getDirectionVector()->multiply(-3)->addVector($pos);
 		if($vec->y < -64 || $vec->y + 1 < -64){
 			$vec->y += 1;
 		}elseif($vec->y > 256 || $vec->y - 1 > 256){
@@ -68,8 +75,6 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		$type = $this->type;
 		$blockId = $type->getBlockId();
 		$nbt = CompoundTag::create()
-			->setString('id', 'Chest')
-			->setInt('Chest', 1)
 			->setString('CustomName', $this->title)
 			->setInt('x', $holder->x)
 			->setInt('y', $holder->y)

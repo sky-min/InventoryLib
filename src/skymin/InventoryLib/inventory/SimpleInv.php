@@ -34,8 +34,8 @@ use Closure;
 
 final class SimpleInv extends BaseInventory{
 
-	public static function create(InvType $type, string $title = '') : self{
-		return new self($type, $title);
+	public static function create(string $identifier, string $title = '') : self{
+		return new self($identifier, $title);
 	}
 
 	private ?Closure $actionHandler = null;
