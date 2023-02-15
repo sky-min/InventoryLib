@@ -64,9 +64,9 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
 		$vec = $player->getDirectionVector()->multiply(-3)->addVector($pos);
-		if($vec->y < -64 || $vec->y + 1 < -64){
+		if($vec->y + 1 < -64){
 			$vec->y += 1;
-		}elseif($vec->y > 256 || $vec->y - 1 > 256){
+		}elseif($vec->y - 1 > 256){
 			$vec->y -= 1;
 		}
 		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
