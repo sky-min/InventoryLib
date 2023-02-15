@@ -37,6 +37,7 @@ use pocketmine\player\Player;
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 
+use pocketmine\world\World;
 use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\BlockFactory;
@@ -64,9 +65,9 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
 		$vec = $player->getDirectionVector()->multiply(-3)->addVector($pos);
-		if($vec->y + 1 < -64){
+		if($vec->y + 1 < World::Y_MIN){
 			$vec->y += 1;
-		}elseif($vec->y - 1 > 320){
+		}elseif($vec->y - 1 > World::Y_MAX){
 			$vec->y -= 1;
 		}
 		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
