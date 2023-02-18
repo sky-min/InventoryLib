@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace skymin\InventoryLib\type;
 
+use InvalidArgumentException;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
-
-use InvalidArgumentException;
 
 final class InvTypeRegistry{
 
