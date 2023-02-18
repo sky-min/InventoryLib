@@ -55,7 +55,6 @@ final class EventListener implements Listener{
 		$network = $player->getNetworkSession();
 		$callbacks = $network->getInvManager()?->getContainerOpenCallbacks();
 		if($callbacks === null) return;
-		$callbacks->clear();
 		$callbacks->add(function(int $id, Inventory $inv) use ($player) : ?array{
 			if(!$inv instanceof BaseInventory) return null;
 			return [ContainerOpenPacket::blockInv(
