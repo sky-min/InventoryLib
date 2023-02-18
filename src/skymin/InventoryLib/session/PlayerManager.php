@@ -25,15 +25,8 @@ declare(strict_types=1);
 
 namespace skymin\InventoryLib\session;
 
-use pocketmine\event\EventPriority;
-use pocketmine\event\player\{PlayerJoinEvent, PlayerQuitEvent};
-use pocketmine\inventory\Inventory;
-use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
-use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
-use skymin\event\EventHandler;
-use skymin\InventoryLib\inventory\BaseInventory;
 
 final class PlayerManager{
 	use SingletonTrait;
@@ -49,28 +42,11 @@ final class PlayerManager{
 		return self::$sessions[$player->getId()] ?? null;
 	}
 
-	#[EventHandler(EventPriority::MONITOR)]
-	public function onJoin(PlayerJoinEvent $ev) : void{
-		$player = $ev->getPlayer();
-		$network = $player->getNetworkSession();
-		$callbacks = $network->getInvManager()?->getContainerOpenCallbacks();
-		if($callbacks === null) return;
-		$previous = $callbacks->toArray();
-		$callbacks->clear();
-		$callbacks->add(function(int $id, Inventory $inv) : ?array{
-			if(!$inv instanceof BaseInventory) return null;
-			return [ContainerOpenPacket::blockInv(
-				$id,
-				$inv->getTypeInfo()->getWindowType(),
-				BlockPosition::fromVector3($inv->getHolder())
-			)];
-		}, ...$previous);
-		self::$sessions[$player->getId()] = new PlayerSession($network);
+	public function createSession(Player $player) : void{
+		self::$sessions[$player->getId()] = new PlayerSession($player->getNetworkSession());
 	}
 
-	#[EventHandler(EventPriority::MONITOR)]
-	public function onQuit(PlayerQuitEvent $ev) : void{
-		unset(self::$sessions[$ev->getPlayer()->getId()]);
+	public function closeSession(Player $player) : void{
+		unset(self::$sessions[$player->getId()]);
 	}
-
 }

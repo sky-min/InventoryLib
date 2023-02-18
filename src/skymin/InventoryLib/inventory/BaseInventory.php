@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace skymin\InventoryLib\inventory;
 
 use LogicException;
-use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
@@ -38,12 +37,17 @@ use skymin\InventoryLib\InvLibHandler;
 use skymin\InventoryLib\session\PlayerManager;
 use skymin\InventoryLib\type\{InvType};
 
-abstract class BaseInventory extends SimpleInventory implements BlockInventory{
-	use BlockInventoryTrait;
+abstract class BaseInventory extends SimpleInventory{
 
 	private PlayerManager $player_manager;
 
 	private InvType $type;
+
+	/**
+	 * @var Position[]
+	 * @phpstan-var array<int, Position>
+	 */
+	private array $holders = [];
 
 	public function __construct(string $identifier, private string $title = ''){
 		if(!InvLibHandler::isRegistered()){
@@ -62,7 +66,8 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		}elseif($vec->y - 1 > World::Y_MAX){
 			$vec->y -= 1;
 		}
-		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
+		$holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
+		$this->holders[$player->getId()] = $holder;
 		$session = $this->player_manager->get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
@@ -103,4 +108,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 		return $this->type;
 	}
 
+	final public function getHolder(Player $player) : ?Position{
+		return $this->holders[$player->getId()] ?? null;
+	}
 }

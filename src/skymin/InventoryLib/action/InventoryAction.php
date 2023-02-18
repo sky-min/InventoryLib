@@ -34,7 +34,7 @@ final class InventoryAction{
 		private readonly Player $player,
 		private readonly int $slot,
 		private readonly Item $sourceItem,
-		private Item $targetItem
+		private readonly Item $targetItem
 	){
 	}
 

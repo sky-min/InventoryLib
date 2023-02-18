@@ -27,15 +27,50 @@ namespace skymin\InventoryLib;
 
 use pocketmine\event\EventPriority;
 use pocketmine\event\inventory\{InventoryOpenEvent, InventoryTransactionEvent};
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\inventory\Inventory;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 use pocketmine\network\mcpe\protocol\NetworkStackLatencyPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use skymin\event\EventHandler;
 use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\inventory\BaseInventory;
 use skymin\InventoryLib\session\PlayerManager;
 
-final class EventListener{
+final class EventListener implements Listener{
+
+	private PlayerManager $manager;
+
+	public function __construct(){
+		$this->manager = PlayerManager::getInstance();
+	}
+
+	#[EventHandler(EventPriority::MONITOR)]
+	public function onJoin(PlayerJoinEvent $ev) : void{
+		$player = $ev->getPlayer();
+		$network = $player->getNetworkSession();
+		$callbacks = $network->getInvManager()?->getContainerOpenCallbacks();
+		if($callbacks === null) return;
+		$callbacks->clear();
+		$callbacks->add(function(int $id, Inventory $inv) use ($player) : ?array{
+			if(!$inv instanceof BaseInventory) return null;
+			return [ContainerOpenPacket::blockInv(
+				$id,
+				$inv->getTypeInfo()->getWindowType(),
+				BlockPosition::fromVector3($inv->getHolder($player))
+			)];
+		});
+		$this->manager->createSession($player);
+	}
+
+	#[EventHandler(EventPriority::MONITOR)]
+	public function onQuit(PlayerQuitEvent $ev) : void{
+		$this->manager->closeSession($ev->getPlayer());
+	}
 
 	#[EventHandler]
 	public function onInvTransaction(InventoryTransactionEvent $ev) : void{
@@ -55,19 +90,16 @@ final class EventListener{
 		}
 	}
 
-	#[EventHandler(
-		EventPriority::MONITOR,
-		true
-	)]
+	#[EventHandler(EventPriority::MONITOR, true)]
 	public function onInvOpen(InventoryOpenEvent $ev) : void{
 		if(!$ev->isCancelled()) return;
 		$inventory = $ev->getInventory();
 		if($inventory instanceof BaseInventory){
-			$inventory->sendRealBlock($ev->getPlayer());
+			$this->manager->get($ev->getPlayer())->sendRealBlock($inventory);
 		}
 	}
 
-	#[EventHandler]
+	#[EventHandler(EventPriority::MONITOR)]
 	public function onDataRecieve(DataPacketReceiveEvent $ev) : void{
 		if($ev->getPacket() instanceof NetworkStackLatencyPacket){
 			$player = $ev->getOrigin()->getPlayer();

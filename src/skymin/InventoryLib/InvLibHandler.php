@@ -27,7 +27,6 @@ namespace skymin\InventoryLib;
 
 use pocketmine\plugin\Plugin;
 use skymin\event\EventManager;
-use skymin\InventoryLib\session\PlayerManager;
 use skymin\InventoryLib\type\InvTypeRegistry;
 
 final class InvLibHandler{
@@ -40,7 +39,6 @@ final class InvLibHandler{
 
 	public static function register(Plugin $plugin) : void{
 		if(self::$registry === null){
-			EventManager::register(new PlayerManager(), $plugin);
 			EventManager::register(new EventListener(), $plugin);
 			self::$registry = new InvTypeRegistry();
 		}

@@ -42,6 +42,7 @@ final class PlayerSession{
 
 	public function __construct(private readonly NetworkSession $network){ }
 
+	/** @internal */
 	public function waitOpenWindow(BaseInventory $inv) : void{
 		$waitCount = 2;
 		if($this->current !== null){
@@ -63,8 +64,9 @@ final class PlayerSession{
 		});
 	}
 
-	private function sendRealBlock(BaseInventory $current) : void{
-		$holder = $current->getHolder();
+	/** @internal */
+	public function sendRealBlock(BaseInventory $current) : void{
+		$holder = $current->getHolder($this->network->getPlayer());
 		$world = $holder->world;
 		$vec = $holder->asVector3();
 		$blockId = $world->getBlock($vec)->getStateId();
@@ -101,11 +103,13 @@ final class PlayerSession{
 		}
 	}
 
+	/** @internal */
 	private function wait(Closure $then) : void{
 		$this->network->sendDataPacket(NetworkStackLatencyPacket::request(1));
 		$this->waitClosure = $then;
 	}
 
+	/** @internal */
 	public function onClose(BaseInventory $current) : void{
 		$this->sendRealBlock($current);
 		$this->current = null;
@@ -130,6 +134,7 @@ final class PlayerSession{
 		return $this->current;
 	}
 
+	/** @internal */
 	public function notify() : void{
 		if($this->waitClosure === null) return;
 		if(!($this->waitClosure)()){
