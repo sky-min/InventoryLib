@@ -1,19 +1,19 @@
 <?php
 /**
- *      _                    _
- *  ___| | ___   _ _ __ ___ (_)_ __
- * / __| |/ / | | | '_ ` _ \| | '_ \
+ *      _                    _       
+ *  ___| | ___   _ _ __ ___ (_)_ __  
+ * / __| |/ / | | | '_ ` _ \| | '_ \ 
  * \__ \   <| |_| | | | | | | | | | |
  * |___/_|\_\\__, |_| |_| |_|_|_| |_|
- *           |___/
- *
+ *           |___/ 
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the MIT License. see <https://opensource.org/licenses/MIT>.
- *
+ * 
  * @author skymin
  * @link   https://github.com/sky-min
  * @license https://opensource.org/licenses/MIT MIT License
- *
+ * 
  *   /\___/\
  * 　(∩`・ω・)
  * ＿/_ミつ/￣￣￣/
@@ -21,21 +21,30 @@
  *
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace skymin\InventoryLib\inventory;
 
-use LogicException;
-use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
-use pocketmine\inventory\SimpleInventory;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use pocketmine\player\Player;
-use pocketmine\world\Position;
-use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\InvLibHandler;
+use skymin\InventoryLib\action\InventoryAction;
 use skymin\InventoryLib\session\PlayerManager;
-use skymin\InventoryLib\type\{InvType,};
+use skymin\InventoryLib\type\{
+	InvType,
+	InvTypeRegistry
+};
+
+use pocketmine\player\Player;
+use pocketmine\inventory\SimpleInventory;
+use pocketmine\block\inventory\{BlockInventory, BlockInventoryTrait};
+
+use pocketmine\world\World;
+use pocketmine\world\Position;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\block\BlockFactory;
+use pocketmine\block\tile\Spawnable;
+use pocketmine\network\mcpe\protocol\types\CacheableNbt;
+
+use LogicException;
 
 abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	use BlockInventoryTrait;
@@ -56,9 +65,9 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	final public function send(Player $player) : void{
 		$pos = $player->getPosition();
 		$vec = $player->getDirectionVector()->multiply(-3)->addVector($pos);
-		if($vec->y < -64 || $vec->y + 1 < -64){
+		if($vec->y + 1 < World::Y_MIN){
 			$vec->y += 1;
-		}elseif($vec->y > 256 || $vec->y - 1 > 256){
+		}elseif($vec->y - 1 > World::Y_MAX){
 			$vec->y -= 1;
 		}
 		$this->holder = $holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
@@ -86,7 +95,7 @@ abstract class BaseInventory extends SimpleInventory implements BlockInventory{
 	// If it returns false, the event is canceled.
 	abstract public function onAction(InventoryAction $action) : bool;
 
-	final public function close(Player $player) : void{
+	final public function close(Player $player) : void{ 
 		$this->player_manager->get($player)->closeWindow();
 	}
 
