@@ -1,5 +1,6 @@
 name: InventoryLib
 antigen: skymin\InventoryLib
 api: 5.0.0
-version: 4.1.0
+php: 8.1
+version: 4.2.0
 author: skymin
