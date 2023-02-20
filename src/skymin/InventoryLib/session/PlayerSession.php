@@ -105,7 +105,7 @@ final class PlayerSession{
 
 	/** @internal */
 	private function wait(Closure $then) : void{
-		$this->network->sendDataPacket(NetworkStackLatencyPacket::request(1));
+		$this->network->sendDataPacket(NetworkStackLatencyPacket::request(PlayerManager::WaitId()));
 		$this->waitClosure = $then;
 	}
 
@@ -138,7 +138,7 @@ final class PlayerSession{
 	public function notify() : void{
 		if($this->waitClosure === null) return;
 		if(!($this->waitClosure)()){
-			$this->network->sendDataPacket(NetworkStackLatencyPacket::request(1));
+			$this->network->sendDataPacket(NetworkStackLatencyPacket::request(PlayerManager::WaitId()));
 		}
 	}
 

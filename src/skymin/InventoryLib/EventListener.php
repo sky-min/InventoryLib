@@ -43,12 +43,6 @@ use skymin\InventoryLib\session\PlayerManager;
 
 final class EventListener implements Listener{
 
-	private PlayerManager $manager;
-
-	public function __construct(){
-		$this->manager = PlayerManager::getInstance();
-	}
-
 	#[EventHandler(EventPriority::MONITOR)]
 	public function onJoin(PlayerJoinEvent $ev) : void{
 		$player = $ev->getPlayer();
@@ -63,12 +57,12 @@ final class EventListener implements Listener{
 				BlockPosition::fromVector3($inv->getHolder($player))
 			)];
 		});
-		$this->manager->createSession($player);
+		PlayerManager::createSession($player);
 	}
 
 	#[EventHandler(EventPriority::MONITOR)]
 	public function onQuit(PlayerQuitEvent $ev) : void{
-		$this->manager->closeSession($ev->getPlayer());
+		PlayerManager::closeSession($ev->getPlayer());
 	}
 
 	#[EventHandler]
@@ -94,16 +88,20 @@ final class EventListener implements Listener{
 		if(!$ev->isCancelled()) return;
 		$inventory = $ev->getInventory();
 		if($inventory instanceof BaseInventory){
-			$this->manager->get($ev->getPlayer())->sendRealBlock($inventory);
+			PlayerManager::get($ev->getPlayer())?->sendRealBlock($inventory);
 		}
 	}
 
 	#[EventHandler(EventPriority::MONITOR)]
 	public function onDataRecieve(DataPacketReceiveEvent $ev) : void{
-		if($ev->getPacket() instanceof NetworkStackLatencyPacket){
+		$packet = $ev->getPacket();
+		if(
+			$packet instanceof NetworkStackLatencyPacket &&
+			$packet->timestamp === PlayerManager::WaitId()
+		){
 			$player = $ev->getOrigin()->getPlayer();
 			if($player !== null){
-				PlayerManager::getInstance()->get($player)?->notify();
+				PlayerManager::get($player)?->notify();
 			}
 		}
 	}

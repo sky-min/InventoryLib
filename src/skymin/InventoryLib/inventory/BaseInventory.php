@@ -39,8 +39,6 @@ use skymin\InventoryLib\type\{InvType};
 
 abstract class BaseInventory extends SimpleInventory{
 
-	private PlayerManager $player_manager;
-
 	private InvType $type;
 
 	/**
@@ -55,7 +53,6 @@ abstract class BaseInventory extends SimpleInventory{
 		}
 		$this->type = InvLibHandler::getRegistry()->get($identifier);
 		parent::__construct($this->type->getSize());
-		$this->player_manager = PlayerManager::getInstance();
 	}
 
 	final public function send(Player $player) : void{
@@ -68,7 +65,7 @@ abstract class BaseInventory extends SimpleInventory{
 		}
 		$holder = new Position((int) $vec->x, (int) $vec->y, (int) $vec->z, $pos->world);
 		$this->holders[$player->getId()] = $holder;
-		$session = $this->player_manager->get($player);
+		$session = PlayerManager::get($player);
 		$session->waitOpenWindow($this);
 		$type = $this->type;
 		$blockId = $type->getBlockId();
@@ -86,14 +83,14 @@ abstract class BaseInventory extends SimpleInventory{
 
 	public function onClose(Player $who) : void{
 		parent::onClose($who);
-		$this->player_manager->get($who)->onClose($this);
+		PlayerManager::get($who)->onClose($this);
 	}
 
 	// If it returns false, the event is canceled.
 	abstract public function onAction(InventoryAction $action) : bool;
 
 	final public function close(Player $player) : void{
-		$this->player_manager->get($player)->closeWindow();
+		PlayerManager::get($player)->closeWindow();
 	}
 
 	final public function getTitle() : string{

@@ -26,27 +26,33 @@ declare(strict_types=1);
 namespace skymin\InventoryLib\session;
 
 use pocketmine\player\Player;
-use pocketmine\utils\SingletonTrait;
+use function mt_rand;
 
 final class PlayerManager{
-	use SingletonTrait;
 
 	/** @var PlayerSession[] */
 	private static array $sessions = [];
 
-	public function __construct(){
-		self::setInstance($this);
+	private static int $waitId;
+
+	/** @internal  */
+	public static function init() : void{
+		self::$waitId = mt_rand() * 1000;
 	}
 
-	public function get(Player $player) : ?PlayerSession{
+	public static function WaitId() : int{
+		return self::$waitId;
+	}
+
+	public static function get(Player $player) : ?PlayerSession{
 		return self::$sessions[$player->getId()] ?? null;
 	}
 
-	public function createSession(Player $player) : void{
+	public static function createSession(Player $player) : void{
 		self::$sessions[$player->getId()] = new PlayerSession($player->getNetworkSession());
 	}
 
-	public function closeSession(Player $player) : void{
+	public static function closeSession(Player $player) : void{
 		unset(self::$sessions[$player->getId()]);
 	}
 }
