@@ -32,6 +32,7 @@ use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\{BlockActorDataPacket, NetworkStackLatencyPacket, UpdateBlockPacket};
 use pocketmine\network\mcpe\protocol\types\{BlockPosition, CacheableNbt};
+use pocketmine\world\Position;
 use skymin\InventoryLib\inventory\BaseInventory;
 
 final class PlayerSession{
@@ -39,6 +40,8 @@ final class PlayerSession{
 	private ?BaseInventory $current = null;
 
 	private ?Closure $waitClosure = null;
+
+	private ?Position $beforePosition = null;
 
 	public function __construct(private readonly NetworkSession $network){ }
 
@@ -50,6 +53,7 @@ final class PlayerSession{
 			$waitCount = 8;
 		}
 		$this->current = $inv;
+		$this->beforePosition = $inv->getHolder($this->network->getPlayer());
 		$this->wait(function() use ($inv, &$waitCount) : bool{
 			if($inv !== $this->current || !$this->network->isConnected()){
 				$this->waitClosure = null;
@@ -66,7 +70,11 @@ final class PlayerSession{
 
 	/** @internal */
 	public function sendRealBlock(BaseInventory $current) : void{
-		$holder = $current->getHolder($this->network->getPlayer());
+		if($this->beforePosition === null){
+			$holder = $current->getHolder($this->network->getPlayer());
+		}else{
+			$holder = $this->beforePosition;
+		}
 		$world = $holder->world;
 		$vec = $holder->asVector3();
 		$blockId = $world->getBlock($vec)->getStateId();
@@ -114,6 +122,7 @@ final class PlayerSession{
 		$this->sendRealBlock($current);
 		$this->current = null;
 		$this->waitClosure = null;
+		$this->beforePosition = null;
 	}
 
 	public function closeWindow() : void{
@@ -123,9 +132,7 @@ final class PlayerSession{
 			if($current === $player->getCurrentWindow()){
 				$player->removeCurrentWindow();
 			}else{
-				$this->sendRealBlock($current);
-				$this->current = null;
-				$this->waitClosure = null;
+				$this->onClose($current);
 			}
 		}
 	}
